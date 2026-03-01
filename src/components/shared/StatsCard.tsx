@@ -15,7 +15,7 @@ export function StatsCard({
   label, title, value, icon, trend, trendUp = true, colorClass = "bg-primary/10 text-primary", onClick
 }: StatsCardProps) {
   const displayLabel = label || title || "";
-  const isIconComponent = typeof icon === 'function';
+  const isIconComponent = typeof icon === 'function' || (typeof icon === 'object' && icon !== null && '$$typeof' in icon && 'render' in (icon as any));
   const Icon = isIconComponent ? icon as LucideIcon : null;
   const trendStr = typeof trend === 'object' ? `${trend.positive ? '+' : '-'}${trend.value}%` : trend;
   const isTrendUp = typeof trend === 'object' ? trend.positive : trendUp;
