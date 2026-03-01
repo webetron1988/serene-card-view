@@ -196,7 +196,7 @@ export default function OrgUnits() {
 
   return (
     <AppShell title="Org Units" subtitle="Organisation structure management">
-      <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
+      <div className="space-y-6">
         <PageHeader
           title="Organisation Units"
           subtitle={`${units.filter(u => u.status === "active").length} active units across the organisation`}

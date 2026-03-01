@@ -14,7 +14,7 @@ export default function MyProfile() {
 
   return (
     <AppShell title="My Profile" subtitle="Manage your account">
-      <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
 
         {/* Profile hero card */}
         <div className="bg-card border border-border rounded-xl overflow-hidden">

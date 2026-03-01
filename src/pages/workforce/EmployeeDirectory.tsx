@@ -371,7 +371,7 @@ export default function EmployeeDirectory() {
 
   return (
     <AppShell title="Employee Directory" subtitle="Manage your workforce">
-      <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
+      <div className="space-y-6">
         <PageHeader
           title="Employee Directory"
           subtitle={`${employees.length} employees across ${[...new Set(employees.map(e => e.location))].length} locations`}
