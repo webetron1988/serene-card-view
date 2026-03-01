@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import {
-  Users, Building2, Briefcase, Shield, CheckCircle2, Clock, AlertCircle,
-  TrendingUp, ArrowRight, Sparkles, Activity, Star, UserPlus, BarChart3,
+  Users, Building2, Briefcase, Shield, CheckCircle2, Clock,
+  ArrowRight, Sparkles, Activity, UserPlus, BarChart3,
   Calendar, FileText, ShoppingBag
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
@@ -53,40 +53,36 @@ export default function Dashboard() {
 
   return (
     <AppShell title="Dashboard" subtitle="Welcome back, Admin">
-      <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
+      <div className="space-y-6">
 
         {/* Welcome banner */}
-        <div className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 rounded-2xl p-6 relative overflow-hidden">
-          <div className="absolute left-8 top-1/2 -translate-y-1/2 flex items-center">
-            <div className="w-14 h-14 bg-amber-600/80 rotate-[-15deg] rounded-sm absolute -left-2 top-0" />
-            <div className="w-10 h-10 bg-slate-900 rotate-[10deg] rounded-sm absolute left-6 -top-4" />
-            <div className="w-8 h-8 bg-rose-900/60 rotate-[-5deg] rounded-sm absolute left-4 top-6" />
-          </div>
-          <div className="relative flex items-center justify-between gap-6 pl-24">
+        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-7 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(59,130,246,0.15),transparent_60%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_50%,rgba(139,92,246,0.1),transparent_60%)]" />
+          <div className="relative flex items-center justify-between gap-6">
             <div className="flex-1">
-              <span className="text-amber-400 text-sm font-medium mb-1 block">Welcome to</span>
-              <h2 className="text-2xl font-bold text-white tracking-tight">TalentHub Platform</h2>
-              <div className="mt-3 flex items-center gap-2">
+              <span className="text-blue-400 text-xs font-semibold tracking-wider uppercase">Welcome to</span>
+              <h2 className="text-2xl font-bold text-white tracking-tight mt-1">TalentHub Platform</h2>
+              <div className="mt-3 flex items-center gap-2.5">
                 <span className="text-lg">👋</span>
-                <span className="text-white/90 font-medium">Good Morning, Admin!</span>
-                <span className="text-white/50 mx-1">·</span>
-                <span className="text-sm text-white/70">
-                  You have <span className="text-amber-400 font-semibold">5 pending</span> approvals
+                <span className="text-white/90 font-medium text-sm">Good Morning, Admin!</span>
+                <span className="text-white/30 mx-0.5">·</span>
+                <span className="text-sm text-white/60">
+                  You have <span className="text-blue-400 font-semibold">5 pending</span> approvals
                 </span>
               </div>
             </div>
-            <div className="relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-4 h-4 bg-primary/60 rounded-full" />
-              <div className="bg-primary px-5 py-3 rounded-xl">
-                <p className="text-xs text-primary-foreground/80">Enterprise</p>
-                <p className="text-lg font-bold text-primary-foreground">All Modules Active</p>
+            <div className="hidden md:block">
+              <div className="bg-white/10 backdrop-blur-sm border border-white/10 px-5 py-3.5 rounded-xl">
+                <p className="text-[10px] text-white/50 uppercase tracking-wider font-medium">Plan</p>
+                <p className="text-base font-bold text-white mt-0.5">Enterprise</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
           {stats.map(s => (
             <StatsCard key={s.label} {...s} onClick={() => navigate("/workforce/employees")} />
           ))}
@@ -96,20 +92,20 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* Recent Activity */}
-          <div className="lg:col-span-2 bg-card border border-border rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <div className="lg:col-span-2 bg-card border border-border/60 rounded-xl overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border/60">
               <div className="flex items-center gap-2">
                 <Activity className="w-4 h-4 text-primary" />
                 <h3 className="text-sm font-semibold text-foreground">Recent Activity</h3>
               </div>
-              <button className="text-xs text-primary flex items-center gap-1 hover:underline">
+              <button className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
                 View all <ArrowRight className="w-3 h-3" />
               </button>
             </div>
-            <div className="divide-y divide-border">
+            <div className="divide-y divide-border/40">
               {recentActivity.map((a, i) => (
-                <div key={i} className="flex items-start gap-3 px-5 py-3.5 hover:bg-secondary/30 transition-colors">
-                  <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${avatarColors[i % avatarColors.length]} text-white flex items-center justify-center text-xs font-bold flex-shrink-0`}>
+                <div key={i} className="flex items-start gap-3 px-5 py-3.5 hover:bg-muted/30 transition-colors">
+                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${avatarColors[i % avatarColors.length]} text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0`}>
                     {a.avatar}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -119,7 +115,7 @@ export default function Dashboard() {
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-[11px] text-primary font-medium">{a.module}</span>
-                      <span className="text-[11px] text-muted-foreground">{a.time}</span>
+                      <span className="text-[11px] text-muted-foreground/60">{a.time}</span>
                     </div>
                   </div>
                 </div>
@@ -128,24 +124,24 @@ export default function Dashboard() {
           </div>
 
           {/* Right column */}
-          <div className="space-y-6">
+          <div className="space-y-5">
             {/* Quick Actions */}
-            <div className="bg-card border border-border rounded-xl overflow-hidden">
-              <div className="px-5 py-4 border-b border-border">
+            <div className="bg-card border border-border/60 rounded-xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-border/60">
                 <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-primary" />
                   Quick Actions
                 </h3>
               </div>
-              <div className="p-4 grid grid-cols-3 gap-2">
+              <div className="p-3 grid grid-cols-3 gap-1.5">
                 {quickActions.map(a => (
                   <button
                     key={a.label}
                     onClick={() => navigate(a.path)}
-                    className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-secondary/60 transition-colors group"
+                    className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-muted/50 transition-all group"
                   >
                     <div className={`w-9 h-9 rounded-xl ${a.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                      <a.icon className="w-4.5 h-4.5 w-[18px] h-[18px]" />
+                      <a.icon className="w-[18px] h-[18px]" />
                     </div>
                     <span className="text-[10px] font-medium text-muted-foreground text-center leading-tight">{a.label}</span>
                   </button>
@@ -154,15 +150,15 @@ export default function Dashboard() {
             </div>
 
             {/* License Overview */}
-            <div className="bg-card border border-border rounded-xl overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+            <div className="bg-card border border-border/60 rounded-xl overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border/60">
                 <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <Shield className="w-4 h-4 text-primary" />
                   License
                 </h3>
                 <button
                   onClick={() => navigate("/license")}
-                  className="text-xs text-primary hover:underline"
+                  className="text-xs text-primary font-medium hover:underline"
                 >
                   Manage
                 </button>
@@ -171,7 +167,7 @@ export default function Dashboard() {
                 {licenseModules.map(m => (
                   <div key={m.name} className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2 min-w-0">
-                      <CheckCircle2 className={`w-3.5 h-3.5 flex-shrink-0 ${m.status === "active" ? "text-emerald-500" : m.status === "trial" ? "text-amber-500" : "text-muted-foreground"}`} />
+                      <CheckCircle2 className={`w-3.5 h-3.5 flex-shrink-0 ${m.status === "active" ? "text-emerald-500" : m.status === "trial" ? "text-amber-500" : "text-muted-foreground/40"}`} />
                       <span className="text-xs text-foreground truncate">{m.name}</span>
                     </div>
                     <StatusBadge status={m.status} />
@@ -183,7 +179,7 @@ export default function Dashboard() {
         </div>
 
         {/* AI Assistant teaser */}
-        <div className="bg-gradient-to-r from-primary/5 via-purple-500/5 to-primary/5 border border-primary/20 rounded-xl p-5">
+        <div className="bg-gradient-to-r from-primary/5 via-purple-500/5 to-primary/5 border border-primary/15 rounded-xl p-5">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center flex-shrink-0">
@@ -194,7 +190,7 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground">Generate job descriptions, competency frameworks, and more</p>
               </div>
             </div>
-            <button className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
+            <button className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm">
               Open AI Chat
               <ArrowRight className="w-4 h-4" />
             </button>

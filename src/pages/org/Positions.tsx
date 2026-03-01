@@ -168,7 +168,7 @@ export default function Positions() {
 
   return (
     <AppShell title="Positions" subtitle="Manage organisation positions">
-      <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
+      <div className="space-y-6">
         <PageHeader
           title="Positions"
           subtitle={`${positions.length} positions · ${totalVacancies} total vacancies`}

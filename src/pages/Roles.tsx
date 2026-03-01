@@ -55,7 +55,7 @@ export default function RolesPage() {
 
   return (
     <AppShell title="Roles & Permissions" subtitle="Manage roles and access control">
-      <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
+      <div className="space-y-6">
         <PageHeader
           title="Roles & Permissions"
           subtitle="Two-tier RBAC — Platform and Tenant level roles"

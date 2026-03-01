@@ -36,7 +36,7 @@ export default function UsersPage() {
 
   return (
     <AppShell title="User Management" subtitle="Manage platform users and access">
-      <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
+      <div className="space-y-6">
         <PageHeader
           title="Users"
           subtitle="Manage user accounts, roles, and access permissions"

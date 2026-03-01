@@ -276,9 +276,9 @@ export default function OrgChart() {
 
   return (
     <AppShell title="Org Chart" subtitle="Interactive organisation structure">
-      <div className="flex flex-col h-full" style={{ height: "calc(100vh - 112px)" }}>
+      <div className="flex flex-col -m-6 lg:-m-8" style={{ height: "calc(100vh - 112px)" }}>
         {/* Toolbar */}
-        <div className="px-6 py-3 border-b border-border bg-card flex items-center gap-3 flex-wrap">
+        <div className="px-6 py-3 border-b border-border/60 bg-card/50 flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <Building2 className="w-4 h-4 text-primary" />
             <h2 className="text-sm font-semibold">Organisation Chart</h2>
