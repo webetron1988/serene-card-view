@@ -109,10 +109,10 @@ function UnitForm({ unit, onSave, onClose }: {
         </div>
         <div className="space-y-1.5 col-span-2">
           <Label>Parent Unit</Label>
-          <Select value={form.parentId} onValueChange={v => setForm(p => ({ ...p, parentId: v }))}>
+          <Select value={form.parentId || "__none__"} onValueChange={v => setForm(p => ({ ...p, parentId: v === "__none__" ? "" : v }))}>
             <SelectTrigger><SelectValue placeholder="Select parent unit (root if blank)" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">— Root (No parent)</SelectItem>
+              <SelectItem value="__none__">— Root (No parent)</SelectItem>
               {sampleUnits.filter(u => u.id !== unit?.id).map(u => (
                 <SelectItem key={u.id} value={u.id}>
                   {"  ".repeat(u.level)}{u.name} ({u.code})
