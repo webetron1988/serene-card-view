@@ -12,7 +12,7 @@ interface PageHeaderProps {
   subtitle?: string;
   icon?: LucideIcon;
   iconColor?: string;
-  actions?: Action[];
+  actions?: Action[] | React.ReactNode;
   children?: React.ReactNode;
 }
 
@@ -32,20 +32,22 @@ export function PageHeader({ title, subtitle, icon: Icon, iconColor = "bg-primar
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
         {children}
-        {actions?.map((action, i) => (
-          <button
-            key={i}
-            onClick={action.onClick}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              action.variant === "secondary"
-                ? "bg-secondary text-foreground hover:bg-secondary/80"
-                : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
-            }`}
-          >
-            {action.icon && <action.icon className="w-4 h-4" />}
-            {action.label}
-          </button>
-        ))}
+        {Array.isArray(actions)
+          ? actions.map((action, i) => (
+              <button
+                key={i}
+                onClick={action.onClick}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  action.variant === "secondary"
+                    ? "bg-secondary text-foreground hover:bg-secondary/80"
+                    : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+                }`}
+              >
+                {action.icon && <action.icon className="w-4 h-4" />}
+                {action.label}
+              </button>
+            ))
+          : actions}
       </div>
     </div>
   );
