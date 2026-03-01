@@ -1,29 +1,50 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import EmployeeProfile from "./pages/EmployeeProfile";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
+import { Toaster } from "@/components/ui/sonner";
 
-const queryClient = new QueryClient();
+import Login from "@/pages/Login";
+import Dashboard from "@/pages/Dashboard";
+import MyProfile from "@/pages/MyProfile";
+import Users from "@/pages/Users";
+import Roles from "@/pages/Roles";
+import EmployeeDirectory from "@/pages/workforce/EmployeeDirectory";
+import OrgChart from "@/pages/org/OrgChart";
+import OrgUnits from "@/pages/org/OrgUnits";
+import Positions from "@/pages/org/Positions";
+import Locations from "@/pages/org/Locations";
+import Marketplace from "@/pages/marketplace/Marketplace";
+import MasterData from "@/pages/MasterData";
+import Tenants from "@/pages/Tenants";
+import License from "@/pages/License";
+import AuditLog from "@/pages/AuditLog";
+import Settings from "@/pages/settings/Settings";
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
+export default function App() {
+  return (
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/employee/:id" element={<EmployeeProfile />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<MyProfile />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/roles" element={<Roles />} />
+          <Route path="/workforce/employees" element={<EmployeeDirectory />} />
+          <Route path="/org/chart" element={<OrgChart />} />
+          <Route path="/org/units" element={<OrgUnits />} />
+          <Route path="/org/positions" element={<Positions />} />
+          <Route path="/org/locations" element={<Locations />} />
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/master-data" element={<MasterData />} />
+          <Route path="/tenants" element={<Tenants />} />
+          <Route path="/license" element={<License />} />
+          <Route path="/audit" element={<AuditLog />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
-
-export default App;
+      <Toaster richColors position="top-right" />
+    </ThemeProvider>
+  );
+}

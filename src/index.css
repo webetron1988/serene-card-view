@@ -36,23 +36,21 @@
 
     --radius: 0.625rem;
 
-    /* Custom tokens */
     --card-shadow: 220 60% 50%;
-    
+
     --status-draft: 220 9% 46%;
     --status-active: 217 91% 50%;
     --status-completed: 145 63% 49%;
-    
+
     --priority-low: 145 63% 49%;
     --priority-medium: 38 92% 50%;
     --priority-high: 0 84% 60%;
-    
+
     --category-talent: 262 83% 58%;
     --category-planning: 199 89% 48%;
     --category-strategy: 38 92% 50%;
     --category-analytics: 145 63% 49%;
 
-    /* Pastel icon backgrounds */
     --pastel-blue: 220 80% 94%;
     --pastel-blue-icon: 220 75% 55%;
     --pastel-rose: 350 70% 93%;
@@ -113,7 +111,7 @@
 @layer utilities {
   .card-elevated {
     @apply bg-card border border-border;
-    box-shadow: 
+    box-shadow:
       0 1px 3px 0 hsl(var(--card-shadow) / 0.04),
       0 4px 12px -2px hsl(var(--card-shadow) / 0.06);
   }
@@ -123,10 +121,18 @@
   }
 
   .card-elevated-hover:hover {
-    box-shadow: 
+    box-shadow:
       0 4px 12px 0 hsl(var(--card-shadow) / 0.08),
       0 12px 28px -4px hsl(var(--card-shadow) / 0.12);
     transform: translateY(-2px);
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
 
