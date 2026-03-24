@@ -17,7 +17,33 @@ import MasterData from "@/pages/MasterData";
 import Tenants from "@/pages/Tenants";
 import License from "@/pages/License";
 import AuditLog from "@/pages/AuditLog";
-import Settings from "@/pages/settings/Settings";
+
+// Settings
+import { AppShell } from "@/components/layout/AppShell";
+import SettingsLayout from "@/pages/settings/SettingsLayout";
+import GeneralSettings from "@/pages/settings/GeneralSettings";
+import RegistrationSettings from "@/pages/settings/RegistrationSettings";
+import RolesPermissionsPage from "@/pages/settings/RolesPermissionsPage";
+import DepartmentsPage from "@/pages/settings/DepartmentsPage";
+import BotCategoriesPage from "@/pages/settings/BotCategoriesPage";
+import BrandingLocalization from "@/pages/settings/BrandingLocalization";
+import SecuritySettingsPage from "@/pages/settings/SecuritySettingsPage";
+import PaymentGatewaysPage from "@/pages/settings/PaymentGatewaysPage";
+import AIModelSettingsPage from "@/pages/settings/AIModelSettingsPage";
+import GuardrailsSettingsPage from "@/pages/settings/GuardrailsSettingsPage";
+import ApiKeysWebhooks from "@/pages/settings/ApiKeysWebhooks";
+import EmailSettings from "@/pages/settings/EmailSettings";
+import NotificationSettings from "@/pages/settings/NotificationSettings";
+import IntegrationSettings from "@/pages/settings/IntegrationSettings";
+import ChannelSettingsPage from "@/pages/settings/ChannelSettingsPage";
+
+function SettingsPage() {
+  return (
+    <AppShell title="Settings" subtitle="Platform configuration and preferences">
+      <SettingsLayout />
+    </AppShell>
+  );
+}
 
 export default function App() {
   return (
@@ -40,7 +66,23 @@ export default function App() {
           <Route path="/tenants" element={<Tenants />} />
           <Route path="/license" element={<License />} />
           <Route path="/audit" element={<AuditLog />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="/settings" element={<SettingsPage />}>
+            <Route index element={<GeneralSettings />} />
+            <Route path="registration" element={<RegistrationSettings />} />
+            <Route path="roles" element={<RolesPermissionsPage />} />
+            <Route path="departments" element={<DepartmentsPage />} />
+            <Route path="bot-categories" element={<BotCategoriesPage />} />
+            <Route path="branding" element={<BrandingLocalization />} />
+            <Route path="security" element={<SecuritySettingsPage />} />
+            <Route path="payments" element={<PaymentGatewaysPage />} />
+            <Route path="ai-models" element={<AIModelSettingsPage />} />
+            <Route path="guardrails" element={<GuardrailsSettingsPage />} />
+            <Route path="api-keys" element={<ApiKeysWebhooks />} />
+            <Route path="email" element={<EmailSettings />} />
+            <Route path="notifications" element={<NotificationSettings />} />
+            <Route path="integrations" element={<IntegrationSettings />} />
+            <Route path="channels" element={<ChannelSettingsPage />} />
+          </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </BrowserRouter>
