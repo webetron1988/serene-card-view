@@ -88,10 +88,7 @@ export function Header({ title, subtitle }: HeaderProps) {
                 </div>
                 <div className="hidden lg:block text-left">
                   <p className="text-xs font-semibold text-foreground leading-none">Admin User</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
-                    <ActiveStatusIcon className={`w-2.5 h-2.5 ${activeStatus.color} ${activeStatus.fill}`} />
-                    {activeStatus.label}
-                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Super Admin</p>
                 </div>
                 <ChevronDown className="w-3 h-3 text-muted-foreground/60 hidden lg:block" />
               </button>
