@@ -52,7 +52,6 @@ const navGroups = [
 
 const bottomItems = [
   { id: "messages", label: "Messages", icon: MessageSquare, badge: 3 },
-  { id: "analytics", label: "Analytics", icon: BarChart3 },
   { id: "help", label: "Help", icon: HelpCircle },
 ];
 
