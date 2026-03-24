@@ -12,15 +12,8 @@ export function Header({ title, subtitle }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border/50">
       <div className="px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
-        {/* Left: title */}
-        <div className="flex flex-col min-w-0">
-          {title && (
-            <h2 className="text-sm font-semibold text-foreground truncate tracking-tight">{title}</h2>
-          )}
-          {subtitle && (
-            <p className="text-[11px] text-muted-foreground truncate">{subtitle}</p>
-          )}
-        </div>
+        {/* Left spacer */}
+        <div className="min-w-0" />
 
         {/* Center: Search */}
         <div className="flex flex-1 max-w-md">
