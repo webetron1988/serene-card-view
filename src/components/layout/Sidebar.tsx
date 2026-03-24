@@ -207,25 +207,6 @@ export function Sidebar() {
           </button>
         ))}
 
-        {/* User profile */}
-        <button
-          onClick={() => navigate("/profile")}
-          className={`w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-lg transition-all mt-2 border-t border-border/40 pt-3
-            ${collapsed ? "justify-center" : ""}
-            hover:bg-muted/60
-          `}
-          title={collapsed ? "My Profile" : undefined}
-        >
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-primary/60 text-primary-foreground flex items-center justify-center text-[11px] font-bold flex-shrink-0">
-            A
-          </div>
-          {!collapsed && (
-            <div className="flex-1 text-left overflow-hidden">
-              <p className="text-xs font-medium text-foreground truncate">Admin User</p>
-              <p className="text-[10px] text-muted-foreground/70 truncate">Super Admin</p>
-            </div>
-          )}
-        </button>
       </nav>
     </aside>
   );
