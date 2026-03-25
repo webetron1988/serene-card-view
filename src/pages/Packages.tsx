@@ -29,6 +29,7 @@ import {
   mockPackages, mockSubscriptions, packageMrrTrend, featureCategories,
   Package, PackageFeatures, TenantSubscription
 } from "@/data/packagesData";
+import { SubscriptionDetailPanel } from "@/components/packages/SubscriptionDetailPanel";
 import { toast } from "sonner";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis,
