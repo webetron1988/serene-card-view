@@ -567,7 +567,7 @@ export default function Packages() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => toast.info("Viewing subscription details")}>
+              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setSelectedSub(sub); setSubDetailOpen(true); }}>
                                 <ExternalLink className="h-3.5 w-3.5 mr-2" /> View Details
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => toast.info("Upgrade dialog coming soon")}>
