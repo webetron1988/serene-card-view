@@ -29,6 +29,7 @@ import {
   mockPackages, mockSubscriptions, packageMrrTrend, featureCategories,
   Package, PackageFeatures, TenantSubscription
 } from "@/data/packagesData";
+import { SubscriptionDetailPanel } from "@/components/packages/SubscriptionDetailPanel";
 import { toast } from "sonner";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis,
@@ -111,6 +112,8 @@ export default function Packages() {
   const [subSearch, setSubSearch] = useState("");
   const [subStatusFilter, setSubStatusFilter] = useState("all");
   const [subPkgFilter, setSubPkgFilter] = useState("all");
+  const [selectedSub, setSelectedSub] = useState<TenantSubscription | null>(null);
+  const [subDetailOpen, setSubDetailOpen] = useState(false);
 
   // Analytics
   const totalMRR = packages.reduce((s, p) => s + p.mrr, 0);
@@ -520,7 +523,7 @@ export default function Packages() {
                   ) : filteredSubs.map(sub => {
                     const seatPct = sub.seats > 0 ? Math.round((sub.usedSeats / sub.seats) * 100) : 0;
                     return (
-                      <tr key={sub.id} className="border-b last:border-0 hover:bg-muted/30">
+                      <tr key={sub.id} className="border-b last:border-0 hover:bg-muted/30 cursor-pointer" onClick={() => { setSelectedSub(sub); setSubDetailOpen(true); }}>
                         <td className="p-3">
                           <p className="font-medium text-sm">{sub.tenantName}</p>
                           <p className="text-xs text-muted-foreground">{sub.tenantEmail}</p>
@@ -564,7 +567,7 @@ export default function Packages() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => toast.info("Viewing subscription details")}>
+              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setSelectedSub(sub); setSubDetailOpen(true); }}>
                                 <ExternalLink className="h-3.5 w-3.5 mr-2" /> View Details
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => toast.info("Upgrade dialog coming soon")}>
@@ -847,6 +850,13 @@ export default function Packages() {
             </div>
           </SheetContent>
         </Sheet>
+
+        {/* ═══ SUBSCRIPTION DETAIL PANEL ═══ */}
+        <SubscriptionDetailPanel
+          subscription={selectedSub}
+          open={subDetailOpen}
+          onOpenChange={setSubDetailOpen}
+        />
       </div>
     </AppShell>
   );
