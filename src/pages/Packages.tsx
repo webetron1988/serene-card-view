@@ -523,7 +523,7 @@ export default function Packages() {
                   ) : filteredSubs.map(sub => {
                     const seatPct = sub.seats > 0 ? Math.round((sub.usedSeats / sub.seats) * 100) : 0;
                     return (
-                      <tr key={sub.id} className="border-b last:border-0 hover:bg-muted/30">
+                      <tr key={sub.id} className="border-b last:border-0 hover:bg-muted/30 cursor-pointer" onClick={() => { setSelectedSub(sub); setSubDetailOpen(true); }}>
                         <td className="p-3">
                           <p className="font-medium text-sm">{sub.tenantName}</p>
                           <p className="text-xs text-muted-foreground">{sub.tenantEmail}</p>
