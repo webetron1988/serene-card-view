@@ -67,6 +67,7 @@ export default function App() {
           <Route path="/tenants" element={<Tenants />} />
           <Route path="/license" element={<License />} />
           <Route path="/audit" element={<AuditLog />} />
+          <Route path="/packages" element={<Packages />} />
           <Route path="/settings" element={<SettingsPage />}>
             <Route index element={<GeneralSettings />} />
             <Route path="registration" element={<RegistrationSettings />} />
