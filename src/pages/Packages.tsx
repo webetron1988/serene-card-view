@@ -850,6 +850,13 @@ export default function Packages() {
             </div>
           </SheetContent>
         </Sheet>
+
+        {/* ═══ SUBSCRIPTION DETAIL PANEL ═══ */}
+        <SubscriptionDetailPanel
+          subscription={selectedSub}
+          open={subDetailOpen}
+          onOpenChange={setSubDetailOpen}
+        />
       </div>
     </AppShell>
   );
