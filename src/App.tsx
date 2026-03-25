@@ -17,6 +17,7 @@ import MasterData from "@/pages/MasterData";
 import Tenants from "@/pages/Tenants";
 import License from "@/pages/License";
 import AuditLog from "@/pages/AuditLog";
+import Packages from "@/pages/Packages";
 
 // Settings
 import { AppShell } from "@/components/layout/AppShell";
@@ -66,6 +67,7 @@ export default function App() {
           <Route path="/tenants" element={<Tenants />} />
           <Route path="/license" element={<License />} />
           <Route path="/audit" element={<AuditLog />} />
+          <Route path="/packages" element={<Packages />} />
           <Route path="/settings" element={<SettingsPage />}>
             <Route index element={<GeneralSettings />} />
             <Route path="registration" element={<RegistrationSettings />} />

@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, Building2, ChevronLeft, ChevronRight,
   Settings, BarChart3, HelpCircle, MessageSquare, ShoppingBag,
   Shield, Key, FileText, ChevronDown, ChevronUp, Layers,
-  Briefcase, Database
+  Briefcase, Database, Package
 } from "lucide-react";
 
 const navGroups = [
@@ -42,6 +42,7 @@ const navGroups = [
     items: [
       { id: "users", label: "Users", icon: Users, path: "/users" },
       { id: "roles", label: "Roles & Permissions", icon: Shield, path: "/roles" },
+      { id: "packages", label: "Packages", icon: Package, path: "/packages" },
       { id: "tenants", label: "Tenants", icon: Layers, path: "/tenants" },
       { id: "license", label: "License", icon: Key, path: "/license" },
       { id: "audit", label: "Audit Log", icon: FileText, path: "/audit" },
