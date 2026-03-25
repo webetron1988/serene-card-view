@@ -17,6 +17,7 @@ import MasterData from "@/pages/MasterData";
 import Tenants from "@/pages/Tenants";
 import License from "@/pages/License";
 import AuditLog from "@/pages/AuditLog";
+import Packages from "@/pages/Packages";
 
 // Settings
 import { AppShell } from "@/components/layout/AppShell";
