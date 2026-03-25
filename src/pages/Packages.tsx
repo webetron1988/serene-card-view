@@ -112,6 +112,8 @@ export default function Packages() {
   const [subSearch, setSubSearch] = useState("");
   const [subStatusFilter, setSubStatusFilter] = useState("all");
   const [subPkgFilter, setSubPkgFilter] = useState("all");
+  const [selectedSub, setSelectedSub] = useState<TenantSubscription | null>(null);
+  const [subDetailOpen, setSubDetailOpen] = useState(false);
 
   // Analytics
   const totalMRR = packages.reduce((s, p) => s + p.mrr, 0);
