@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, Building2, ChevronLeft, ChevronRight,
   Settings, BarChart3, HelpCircle, MessageSquare, ShoppingBag,
   Shield, Key, FileText, ChevronDown, ChevronUp, Layers,
-  Briefcase, Database
+  Briefcase, Database, Package
 } from "lucide-react";
 
 const navGroups = [
