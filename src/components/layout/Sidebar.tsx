@@ -12,19 +12,19 @@ const navGroups = [
     id: "main",
     label: "",
     items: [
-      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
     ],
   },
   {
     id: "hr",
     label: "HR Modules",
     items: [
-      { id: "workforce", label: "Workforce", icon: Users, path: "/workforce", children: [
-        { id: "employee-list", label: "Employee Directory", path: "/workforce/employees" },
-        { id: "org-chart", label: "Org Chart", path: "/org/chart" },
-        { id: "org-units", label: "Org Units", path: "/org/units" },
-        { id: "positions", label: "Positions", path: "/org/positions" },
-        { id: "locations", label: "Locations", path: "/org/locations" },
+      { id: "workforce", label: "Workforce", icon: Users, path: "/admin/workforce", children: [
+        { id: "employee-list", label: "Employee Directory", path: "/admin/workforce/employees" },
+        { id: "org-chart", label: "Org Chart", path: "/admin/org/chart" },
+        { id: "org-units", label: "Org Units", path: "/admin/org/units" },
+        { id: "positions", label: "Positions", path: "/admin/org/positions" },
+        { id: "locations", label: "Locations", path: "/admin/org/locations" },
       ]},
     ],
   },
@@ -32,21 +32,21 @@ const navGroups = [
     id: "platform",
     label: "Platform",
     items: [
-      { id: "marketplace", label: "Marketplace", icon: ShoppingBag, path: "/marketplace" },
-      { id: "master-data", label: "Master Data", icon: Database, path: "/master-data" },
+      { id: "marketplace", label: "Marketplace", icon: ShoppingBag, path: "/admin/marketplace" },
+      { id: "master-data", label: "Master Data", icon: Database, path: "/admin/master-data" },
     ],
   },
   {
     id: "admin",
     label: "Administration",
     items: [
-      { id: "users", label: "Users", icon: Users, path: "/users" },
-      { id: "roles", label: "Roles & Permissions", icon: Shield, path: "/roles" },
-      { id: "packages", label: "Packages", icon: Package, path: "/packages" },
-      { id: "tenants", label: "Tenants", icon: Layers, path: "/tenants" },
-      { id: "license", label: "License", icon: Key, path: "/license" },
-      { id: "audit", label: "Audit Log", icon: FileText, path: "/audit" },
-      { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
+      { id: "users", label: "Users", icon: Users, path: "/admin/users" },
+      { id: "roles", label: "Roles & Permissions", icon: Shield, path: "/admin/roles" },
+      { id: "packages", label: "Packages", icon: Package, path: "/admin/packages" },
+      { id: "tenants", label: "Tenants", icon: Layers, path: "/admin/tenants" },
+      { id: "license", label: "License", icon: Key, path: "/admin/license" },
+      { id: "audit", label: "Audit Log", icon: FileText, path: "/admin/audit" },
+      { id: "settings", label: "Settings", icon: Settings, path: "/admin/settings" },
     ],
   },
 ];
@@ -85,8 +85,8 @@ export function Sidebar() {
         </div>
         {!collapsed && (
           <div className="overflow-hidden">
-            <h1 className="text-sm font-bold text-foreground leading-none tracking-tight">TalentHub</h1>
-            <p className="text-[10px] text-muted-foreground/70 mt-0.5">HR Platform</p>
+            <h1 className="text-sm font-bold text-foreground leading-none tracking-tight">AchievHR</h1>
+            <p className="text-[10px] text-muted-foreground/70 mt-0.5">Platform Admin</p>
           </div>
         )}
       </div>

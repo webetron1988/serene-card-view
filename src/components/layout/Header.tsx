@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, Settings, Search, ChevronDown, User, LogOut, Circle, Clock, MinusCircle, Moon, Wifi, WifiOff } from "lucide-react";
+import { Bell, Settings, Search, ChevronDown, User, LogOut, Circle, Clock, MinusCircle, Moon, WifiOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
@@ -61,7 +61,7 @@ export function Header({ title, subtitle }: HeaderProps) {
           </button>
 
           <button
-            onClick={() => navigate("/settings")}
+            onClick={() => navigate("/admin/settings")}
             className="p-2 text-muted-foreground hover:text-foreground transition-colors rounded-xl hover:bg-muted"
           >
             <Settings className="w-[18px] h-[18px]" />
@@ -77,7 +77,6 @@ export function Header({ title, subtitle }: HeaderProps) {
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 text-primary-foreground flex items-center justify-center text-xs font-bold shadow-sm">
                     A
                   </div>
-                  {/* Status dot on avatar */}
                   <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card ${
                     currentStatus === "available" ? "bg-emerald-500" :
                     currentStatus === "away" ? "bg-amber-500" :
@@ -113,7 +112,7 @@ export function Header({ title, subtitle }: HeaderProps) {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-foreground truncate">Admin User</p>
                     <p className="text-[11px] text-muted-foreground font-medium">Super Admin</p>
-                    <p className="text-[11px] text-muted-foreground/80 truncate mt-0.5">admin@company.com</p>
+                    <p className="text-[11px] text-muted-foreground/80 truncate mt-0.5">admin@achievhr.com</p>
                   </div>
                 </div>
               </div>
@@ -155,14 +154,14 @@ export function Header({ title, subtitle }: HeaderProps) {
               {/* Menu Items */}
               <div className="p-1.5">
                 <DropdownMenuItem
-                  onClick={() => navigate("/profile")}
+                  onClick={() => navigate("/admin/profile")}
                   className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer"
                 >
                   <User className="w-4 h-4 text-muted-foreground" />
                   <span>My Profile</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => navigate("/settings")}
+                  onClick={() => navigate("/admin/settings")}
                   className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer"
                 >
                   <Settings className="w-4 h-4 text-muted-foreground" />
