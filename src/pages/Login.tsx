@@ -24,8 +24,8 @@ export default function Login() {
             <Briefcase className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white">TalentHub</h1>
-            <p className="text-xs text-white/60">Enterprise HR Platform</p>
+            <h1 className="text-lg font-bold text-white">AchievHR</h1>
+            <p className="text-xs text-white/60">Enterprise Talent Platform</p>
           </div>
         </div>
 
@@ -66,7 +66,7 @@ export default function Login() {
 
         {/* Bottom tagline */}
         <p className="relative text-xs text-white/40">
-          © 2025 TalentHub · Enterprise Edition
+          © 2026 AchievHR · Platform Admin
         </p>
       </div>
 
@@ -78,12 +78,12 @@ export default function Login() {
             <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
               <Briefcase className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-lg font-bold text-foreground">TalentHub</h1>
+            <h1 className="text-lg font-bold text-foreground">AchievHR</h1>
           </div>
 
           <div>
             <h2 className="text-2xl font-bold text-foreground">Welcome back</h2>
-            <p className="text-sm text-muted-foreground mt-1">Sign in to your TalentHub account</p>
+            <p className="text-sm text-muted-foreground mt-1">Sign in to your AchievHR admin account</p>
           </div>
 
           {/* SSO Options */}
@@ -108,7 +108,7 @@ export default function Login() {
           </div>
 
           {/* Form */}
-          <form onSubmit={(e) => { e.preventDefault(); navigate("/dashboard"); }} className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); navigate("/admin/dashboard"); }} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">Email address</label>
               <div className="relative">
@@ -156,7 +156,7 @@ export default function Login() {
               type="submit"
               className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm"
             >
-              Sign in to TalentHub
+              Sign in to AchievHR
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
