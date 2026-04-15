@@ -24,12 +24,12 @@ const recentActivity = [
 ];
 
 const quickActions = [
-  { label: "Add Employee", icon: UserPlus, path: "/workforce/employees", color: "bg-primary/10 text-primary" },
-  { label: "Org Chart", icon: Building2, path: "/org/chart", color: "bg-purple-100 text-purple-600" },
-  { label: "Marketplace", icon: ShoppingBag, path: "/marketplace", color: "bg-emerald-100 text-emerald-600" },
-  { label: "Analytics", icon: BarChart3, path: "/analytics", color: "bg-sky-100 text-sky-600" },
-  { label: "Schedule", icon: Calendar, path: "/calendar", color: "bg-amber-100 text-amber-600" },
-  { label: "Reports", icon: FileText, path: "/reports", color: "bg-rose-100 text-rose-600" },
+  { label: "Add Employee", icon: UserPlus, path: "/admin/workforce/employees", color: "bg-primary/10 text-primary" },
+  { label: "Org Chart", icon: Building2, path: "/admin/org/chart", color: "bg-purple-100 text-purple-600" },
+  { label: "Marketplace", icon: ShoppingBag, path: "/admin/marketplace", color: "bg-emerald-100 text-emerald-600" },
+  { label: "Analytics", icon: BarChart3, path: "/admin/analytics", color: "bg-sky-100 text-sky-600" },
+  { label: "Schedule", icon: Calendar, path: "/admin/calendar", color: "bg-amber-100 text-amber-600" },
+  { label: "Reports", icon: FileText, path: "/admin/reports", color: "bg-rose-100 text-rose-600" },
 ];
 
 const licenseModules = [
@@ -84,7 +84,7 @@ export default function Dashboard() {
         {/* Stats row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
           {stats.map(s => (
-            <StatsCard key={s.label} {...s} onClick={() => navigate("/workforce/employees")} />
+            <StatsCard key={s.label} {...s} onClick={() => navigate("/admin/workforce/employees")} />
           ))}
         </div>
 
@@ -157,7 +157,7 @@ export default function Dashboard() {
                   License
                 </h3>
                 <button
-                  onClick={() => navigate("/license")}
+                  onClick={() => navigate("/admin/license")}
                   className="text-xs text-primary font-medium hover:underline"
                 >
                   Manage
