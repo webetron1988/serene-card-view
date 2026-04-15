@@ -20,7 +20,7 @@ export function AppShell({ children, title, subtitle }: AppShellProps) {
         </main>
         <footer className="px-6 py-3 border-t border-border/50">
           <p className="text-[10px] text-muted-foreground/60 text-center tracking-wide">
-            © 2025 TalentHub · Enterprise HR Platform
+            © 2026 AchievHR · Enterprise Talent Platform
           </p>
         </footer>
       </div>
