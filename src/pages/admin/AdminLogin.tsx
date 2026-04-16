@@ -13,7 +13,7 @@ export default function AdminLogin() {
   const location = useLocation();
   const { signInWithPassword } = useAuth();
 
-  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? "/admin/dashboard";
+  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? "/app/admin/dashboard";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

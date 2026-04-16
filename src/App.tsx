@@ -44,7 +44,6 @@ import PolicyGovernancePage from "@/pages/settings/PolicyGovernancePage";
 import DocumentVaultPage from "@/pages/settings/DocumentVaultPage";
 
 // Tenant
-import TenantPicker from "@/pages/tenant/TenantPicker";
 import TenantLogin from "@/pages/tenant/TenantLogin";
 import TenantDashboard from "@/pages/tenant/TenantDashboard";
 import { TenantShell } from "@/components/layout/TenantShell";
@@ -57,7 +56,6 @@ function SettingsPage() {
   );
 }
 
-/** Wrap an admin page in the auth guard */
 const Admin = (el: React.ReactNode) => <RequireAuth>{el}</RequireAuth>;
 
 export default function App() {
@@ -66,29 +64,28 @@ export default function App() {
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            {/* Root redirect */}
-            <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+            {/* Root */}
+            <Route path="/" element={<Navigate to="/app/admin/dashboard" replace />} />
 
-            {/* ─── Platform Admin Login ─── */}
-            <Route path="/admin/login" element={<AdminLogin />} />
-
-            {/* ─── Platform Admin Routes (auth-guarded) ─── */}
-            <Route path="/admin/dashboard" element={Admin(<Dashboard />)} />
-            <Route path="/admin/profile" element={Admin(<MyProfile />)} />
-            <Route path="/admin/users" element={Admin(<Users />)} />
-            <Route path="/admin/roles" element={Admin(<Roles />)} />
-            <Route path="/admin/workforce/employees" element={Admin(<EmployeeDirectory />)} />
-            <Route path="/admin/org/chart" element={Admin(<OrgChart />)} />
-            <Route path="/admin/org/units" element={Admin(<OrgUnits />)} />
-            <Route path="/admin/org/positions" element={Admin(<Positions />)} />
-            <Route path="/admin/org/locations" element={Admin(<Locations />)} />
-            <Route path="/admin/marketplace" element={Admin(<Marketplace />)} />
-            <Route path="/admin/master-data" element={Admin(<MasterData />)} />
-            <Route path="/admin/tenants" element={Admin(<Tenants />)} />
-            <Route path="/admin/license" element={Admin(<License />)} />
-            <Route path="/admin/audit" element={Admin(<AuditLog />)} />
-            <Route path="/admin/packages" element={Admin(<Packages />)} />
-            <Route path="/admin/settings" element={Admin(<SettingsPage />)}>
+            {/* ─── Platform Admin (/app/admin/*) ─── */}
+            <Route path="/app/admin/login" element={<AdminLogin />} />
+            <Route path="/app/admin" element={<Navigate to="/app/admin/dashboard" replace />} />
+            <Route path="/app/admin/dashboard" element={Admin(<Dashboard />)} />
+            <Route path="/app/admin/profile" element={Admin(<MyProfile />)} />
+            <Route path="/app/admin/users" element={Admin(<Users />)} />
+            <Route path="/app/admin/roles" element={Admin(<Roles />)} />
+            <Route path="/app/admin/workforce/employees" element={Admin(<EmployeeDirectory />)} />
+            <Route path="/app/admin/org/chart" element={Admin(<OrgChart />)} />
+            <Route path="/app/admin/org/units" element={Admin(<OrgUnits />)} />
+            <Route path="/app/admin/org/positions" element={Admin(<Positions />)} />
+            <Route path="/app/admin/org/locations" element={Admin(<Locations />)} />
+            <Route path="/app/admin/marketplace" element={Admin(<Marketplace />)} />
+            <Route path="/app/admin/master-data" element={Admin(<MasterData />)} />
+            <Route path="/app/admin/tenants" element={Admin(<Tenants />)} />
+            <Route path="/app/admin/license" element={Admin(<License />)} />
+            <Route path="/app/admin/audit" element={Admin(<AuditLog />)} />
+            <Route path="/app/admin/packages" element={Admin(<Packages />)} />
+            <Route path="/app/admin/settings" element={Admin(<SettingsPage />)}>
               <Route index element={<GeneralSettings />} />
               <Route path="registration" element={<RegistrationSettings />} />
               <Route path="roles" element={<RolesPermissionsPage />} />
@@ -108,9 +105,11 @@ export default function App() {
               <Route path="document-vault" element={<DocumentVaultPage />} />
             </Route>
 
-            {/* ─── Tenant Routes ─── */}
-            <Route path="/tenant" element={<TenantPicker />} />
-            <Route path="/tenant/:tenantCode/login" element={<TenantLogin />} />
+            {/* ─── Tenant ───
+                Generic tenant login (email-based tenant resolution).
+                TODO (later): Add custom-domain detection — when a tenant has a verified
+                custom domain, hostname lookup will render their branded login here. */}
+            <Route path="/tenant/login" element={<TenantLogin />} />
             <Route
               path="/tenant/:tenantCode"
               element={
@@ -123,25 +122,40 @@ export default function App() {
               <Route path="dashboard" element={<TenantDashboard />} />
             </Route>
 
-            {/* ─── Legacy redirects ─── */}
-            <Route path="/login" element={<Navigate to="/admin/login" replace />} />
-            <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="/users" element={<Navigate to="/admin/users" replace />} />
-            <Route path="/roles" element={<Navigate to="/admin/roles" replace />} />
-            <Route path="/packages" element={<Navigate to="/admin/packages" replace />} />
-            <Route path="/tenants" element={<Navigate to="/admin/tenants" replace />} />
-            <Route path="/settings/*" element={<Navigate to="/admin/settings" replace />} />
-            <Route path="/marketplace" element={<Navigate to="/admin/marketplace" replace />} />
-            <Route path="/master-data" element={<Navigate to="/admin/master-data" replace />} />
-            <Route path="/license" element={<Navigate to="/admin/license" replace />} />
-            <Route path="/audit" element={<Navigate to="/admin/audit" replace />} />
-            <Route path="/profile" element={<Navigate to="/admin/profile" replace />} />
-            <Route path="/workforce/*" element={<Navigate to="/admin/workforce/employees" replace />} />
-            <Route path="/org/*" element={<Navigate to="/admin/org/chart" replace />} />
-            <Route path="/tenant/login" element={<Navigate to="/tenant" replace />} />
-            <Route path="/tenant/dashboard" element={<Navigate to="/tenant" replace />} />
+            {/* ─── Legacy redirects (preserve old bookmarks) ─── */}
+            <Route path="/login" element={<Navigate to="/app/admin/login" replace />} />
+            <Route path="/admin/login" element={<Navigate to="/app/admin/login" replace />} />
+            <Route path="/admin" element={<Navigate to="/app/admin/dashboard" replace />} />
+            <Route path="/admin/dashboard" element={<Navigate to="/app/admin/dashboard" replace />} />
+            <Route path="/admin/profile" element={<Navigate to="/app/admin/profile" replace />} />
+            <Route path="/admin/users" element={<Navigate to="/app/admin/users" replace />} />
+            <Route path="/admin/roles" element={<Navigate to="/app/admin/roles" replace />} />
+            <Route path="/admin/workforce/*" element={<Navigate to="/app/admin/workforce/employees" replace />} />
+            <Route path="/admin/org/*" element={<Navigate to="/app/admin/org/chart" replace />} />
+            <Route path="/admin/marketplace" element={<Navigate to="/app/admin/marketplace" replace />} />
+            <Route path="/admin/master-data" element={<Navigate to="/app/admin/master-data" replace />} />
+            <Route path="/admin/tenants" element={<Navigate to="/app/admin/tenants" replace />} />
+            <Route path="/admin/license" element={<Navigate to="/app/admin/license" replace />} />
+            <Route path="/admin/audit" element={<Navigate to="/app/admin/audit" replace />} />
+            <Route path="/admin/packages" element={<Navigate to="/app/admin/packages" replace />} />
+            <Route path="/admin/settings/*" element={<Navigate to="/app/admin/settings" replace />} />
+            <Route path="/dashboard" element={<Navigate to="/app/admin/dashboard" replace />} />
+            <Route path="/users" element={<Navigate to="/app/admin/users" replace />} />
+            <Route path="/roles" element={<Navigate to="/app/admin/roles" replace />} />
+            <Route path="/packages" element={<Navigate to="/app/admin/packages" replace />} />
+            <Route path="/tenants" element={<Navigate to="/app/admin/tenants" replace />} />
+            <Route path="/settings/*" element={<Navigate to="/app/admin/settings" replace />} />
+            <Route path="/marketplace" element={<Navigate to="/app/admin/marketplace" replace />} />
+            <Route path="/master-data" element={<Navigate to="/app/admin/master-data" replace />} />
+            <Route path="/license" element={<Navigate to="/app/admin/license" replace />} />
+            <Route path="/audit" element={<Navigate to="/app/admin/audit" replace />} />
+            <Route path="/profile" element={<Navigate to="/app/admin/profile" replace />} />
+            <Route path="/workforce/*" element={<Navigate to="/app/admin/workforce/employees" replace />} />
+            <Route path="/org/*" element={<Navigate to="/app/admin/org/chart" replace />} />
+            <Route path="/tenant" element={<Navigate to="/tenant/login" replace />} />
+            <Route path="/tenant/:tenantCode/login" element={<Navigate to="/tenant/login" replace />} />
 
-            <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/app/admin/dashboard" replace />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>

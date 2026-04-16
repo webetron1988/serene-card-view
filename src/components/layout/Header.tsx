@@ -45,7 +45,7 @@ export function Header({ title, subtitle }: HeaderProps) {
   const handleSignOut = async () => {
     await signOut();
     toast.success("Signed out");
-    navigate(isTenant ? `/tenant/${tenantCode}/login` : "/admin/login", { replace: true });
+    navigate(isTenant ? "/tenant/login" : "/app/admin/login", { replace: true });
   };
 
   return (
@@ -76,7 +76,7 @@ export function Header({ title, subtitle }: HeaderProps) {
           </button>
 
           <button
-            onClick={() => navigate("/admin/settings")}
+            onClick={() => navigate("/app/admin/settings")}
             className="p-2 text-muted-foreground hover:text-foreground transition-colors rounded-xl hover:bg-muted"
           >
             <Settings className="w-[18px] h-[18px]" />
@@ -169,14 +169,14 @@ export function Header({ title, subtitle }: HeaderProps) {
               {/* Menu Items */}
               <div className="p-1.5">
                 <DropdownMenuItem
-                  onClick={() => navigate("/admin/profile")}
+                  onClick={() => navigate("/app/admin/profile")}
                   className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer"
                 >
                   <User className="w-4 h-4 text-muted-foreground" />
                   <span>My Profile</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => navigate("/admin/settings")}
+                  onClick={() => navigate("/app/admin/settings")}
                   className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer"
                 >
                   <Settings className="w-4 h-4 text-muted-foreground" />
