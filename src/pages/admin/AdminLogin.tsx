@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Briefcase, Eye, EyeOff, Mail, Lock, ArrowRight, Chrome } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { Briefcase, Eye, EyeOff, Mail, Lock, ArrowRight, Building2 } from "lucide-react";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -161,10 +161,15 @@ export default function Login() {
             </button>
           </form>
 
-          {/* MFA hint */}
-          <p className="text-center text-xs text-muted-foreground">
-            Protected by MFA · <span className="text-primary cursor-pointer hover:underline">SAML SSO available</span>
-          </p>
+          <div className="text-center space-y-2">
+            <p className="text-xs text-muted-foreground">
+              Protected by MFA · <span className="text-primary cursor-pointer hover:underline">SAML SSO available</span>
+            </p>
+            <Link to="/tenant" className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground">
+              <Building2 className="w-3 h-3" />
+              Tenant user? Sign in here
+            </Link>
+          </div>
         </div>
       </div>
     </div>
