@@ -6,24 +6,26 @@ import {
 } from "lucide-react";
 
 const settingsNav = [
-  { label: "General", icon: Settings, path: "/admin/settings" },
-  { label: "Registration", icon: UserPlus, path: "/admin/settings/registration" },
-  { label: "Roles & Permissions", icon: Users, path: "/admin/settings/roles" },
-  { label: "Departments", icon: Building2, path: "/admin/settings/departments" },
-  { label: "Bot Categories", icon: FolderTree, path: "/admin/settings/bot-categories" },
-  { label: "Branding", icon: Palette, path: "/admin/settings/branding" },
-  { label: "Security", icon: Shield, path: "/admin/settings/security" },
-  { label: "Policy & Governance", icon: Scale, path: "/admin/settings/policy" },
-  { label: "Document Vault", icon: FileArchive, path: "/admin/settings/document-vault" },
-  { label: "Payments", icon: Wallet, path: "/admin/settings/payments" },
-  { label: "AI Models", icon: Brain, path: "/admin/settings/ai-models" },
-  { label: "Guardrails", icon: ShieldAlert, path: "/admin/settings/guardrails" },
-  { label: "API Keys", icon: Key, path: "/admin/settings/api-keys" },
-  { label: "Email", icon: Mail, path: "/admin/settings/email" },
-  { label: "Notifications", icon: BellRing, path: "/admin/settings/notifications" },
-  { label: "Integrations", icon: Puzzle, path: "/admin/settings/integrations" },
-  { label: "Channels", icon: Globe, path: "/admin/settings/channels" },
+  { label: "General", icon: Settings, path: "/app/admin/settings" },
+  { label: "Registration", icon: UserPlus, path: "/app/admin/settings/registration" },
+  { label: "Roles & Permissions", icon: Users, path: "/app/admin/settings/roles" },
+  { label: "Departments", icon: Building2, path: "/app/admin/settings/departments" },
+  { label: "Bot Categories", icon: FolderTree, path: "/app/admin/settings/bot-categories" },
+  { label: "Branding", icon: Palette, path: "/app/admin/settings/branding" },
+  { label: "Security", icon: Shield, path: "/app/admin/settings/security" },
+  { label: "Policy & Governance", icon: Scale, path: "/app/admin/settings/policy" },
+  { label: "Document Vault", icon: FileArchive, path: "/app/admin/settings/document-vault" },
+  { label: "Payments", icon: Wallet, path: "/app/admin/settings/payments" },
+  { label: "AI Models", icon: Brain, path: "/app/admin/settings/ai-models" },
+  { label: "Guardrails", icon: ShieldAlert, path: "/app/admin/settings/guardrails" },
+  { label: "API Keys", icon: Key, path: "/app/admin/settings/api-keys" },
+  { label: "Email", icon: Mail, path: "/app/admin/settings/email" },
+  { label: "Notifications", icon: BellRing, path: "/app/admin/settings/notifications" },
+  { label: "Integrations", icon: Puzzle, path: "/app/admin/settings/integrations" },
+  { label: "Channels", icon: Globe, path: "/app/admin/settings/channels" },
 ];
+
+const ROOT = "/app/admin/settings";
 
 export default function SettingsLayout() {
   const location = useLocation();
@@ -36,9 +38,9 @@ export default function SettingsLayout() {
         <nav className="space-y-0.5">
           {settingsNav.map((item) => {
             const isActive = location.pathname === item.path ||
-              (item.path !== "/admin/settings" && location.pathname.startsWith(item.path));
-            const isGeneral = item.path === "/admin/settings" && location.pathname === "/admin/settings";
-            const active = isGeneral || (item.path !== "/admin/settings" && isActive);
+              (item.path !== ROOT && location.pathname.startsWith(item.path));
+            const isGeneral = item.path === ROOT && location.pathname === ROOT;
+            const active = isGeneral || (item.path !== ROOT && isActive);
 
             return (
               <NavLink

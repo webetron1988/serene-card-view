@@ -24,12 +24,12 @@ const recentActivity = [
 ];
 
 const quickActions = [
-  { label: "Add Employee", icon: UserPlus, path: "/admin/workforce/employees", color: "bg-primary/10 text-primary" },
-  { label: "Org Chart", icon: Building2, path: "/admin/org/chart", color: "bg-purple-100 text-purple-600" },
-  { label: "Marketplace", icon: ShoppingBag, path: "/admin/marketplace", color: "bg-emerald-100 text-emerald-600" },
-  { label: "Analytics", icon: BarChart3, path: "/admin/analytics", color: "bg-sky-100 text-sky-600" },
-  { label: "Schedule", icon: Calendar, path: "/admin/calendar", color: "bg-amber-100 text-amber-600" },
-  { label: "Reports", icon: FileText, path: "/admin/reports", color: "bg-rose-100 text-rose-600" },
+  { label: "Add Employee", icon: UserPlus, path: "/app/admin/workforce/employees", color: "bg-primary/10 text-primary" },
+  { label: "Org Chart", icon: Building2, path: "/app/admin/org/chart", color: "bg-purple-100 text-purple-600" },
+  { label: "Marketplace", icon: ShoppingBag, path: "/app/admin/marketplace", color: "bg-emerald-100 text-emerald-600" },
+  { label: "Analytics", icon: BarChart3, path: "/app/admin/dashboard", color: "bg-sky-100 text-sky-600" },
+  { label: "Schedule", icon: Calendar, path: "/app/admin/dashboard", color: "bg-amber-100 text-amber-600" },
+  { label: "Reports", icon: FileText, path: "/app/admin/audit", color: "bg-rose-100 text-rose-600" },
 ];
 
 const licenseModules = [
