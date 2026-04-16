@@ -41,7 +41,10 @@ const navGroups = [
     label: "Administration",
     items: [
       { id: "users", label: "Users", icon: Users, path: "/app/admin/users" },
-      { id: "roles", label: "Roles & Permissions", icon: Shield, path: "/app/admin/roles" },
+      { id: "roles-access", label: "Roles & Access", icon: Shield, path: "/app/admin/roles", children: [
+        { id: "permission-matrix", label: "Permission Matrix", path: "/app/admin/roles/permissions" },
+        { id: "roles-list", label: "Roles", path: "/app/admin/roles/list" },
+      ]},
       { id: "packages", label: "Packages", icon: Package, path: "/app/admin/packages" },
       { id: "tenants", label: "Tenants", icon: Layers, path: "/app/admin/tenants" },
       { id: "license", label: "License", icon: Key, path: "/app/admin/license" },
