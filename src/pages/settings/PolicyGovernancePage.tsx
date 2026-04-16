@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Save, Scale, FileCheck, Clock, Shield, AlertTriangle, BookOpen } from "lucide-react";
+import { Save, Scale, FileCheck, Clock, Shield, BookOpen } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 

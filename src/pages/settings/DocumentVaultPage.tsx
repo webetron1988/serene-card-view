@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Save, FileText, Upload, Download, Trash2, Eye, FolderOpen, Plus, Search, Filter } from "lucide-react";
+import { Save, FileText, Download, Trash2, Eye, FolderOpen, Plus, Search } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,7 +35,7 @@ const defaultDocuments: Document[] = [
 ];
 
 export default function DocumentVaultPage() {
-  const [documents, setDocuments] = useState(defaultDocuments);
+  const [documents] = useState(defaultDocuments);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
