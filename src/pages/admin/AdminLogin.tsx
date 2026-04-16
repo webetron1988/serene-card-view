@@ -1,19 +1,17 @@
 import { useState } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
-import { Briefcase, Eye, EyeOff, Mail, Lock, ArrowRight, Building2, Loader2 } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Briefcase, Eye, EyeOff, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { signInWithPassword, signUpWithPassword } = useAuth();
+  const { signInWithPassword } = useAuth();
 
   const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? "/admin/dashboard";
 
@@ -25,24 +23,13 @@ export default function AdminLogin() {
     }
     setSubmitting(true);
     try {
-      if (mode === "signin") {
-        const { error } = await signInWithPassword(email, password);
-        if (error) {
-          toast.error(error.message.includes("Invalid") ? "Invalid email or password" : error.message);
-          return;
-        }
-        toast.success("Welcome back");
-        navigate(from, { replace: true });
-      } else {
-        const { error } = await signUpWithPassword(email, password, displayName || undefined);
-        if (error) {
-          toast.error(error.message);
-          return;
-        }
-        toast.success("Account created — signing you in");
-        // With auto-confirm enabled, signUp also returns a session
-        navigate("/admin/dashboard", { replace: true });
+      const { error } = await signInWithPassword(email, password);
+      if (error) {
+        toast.error(error.message.includes("Invalid") ? "Invalid email or password" : error.message);
+        return;
       }
+      toast.success("Welcome back");
+      navigate(from, { replace: true });
     } finally {
       setSubmitting(false);
     }
@@ -102,7 +89,7 @@ export default function AdminLogin() {
         <p className="relative text-xs text-white/40">© 2026 AchievHR · Platform Admin</p>
       </div>
 
-      {/* Right panel — form */}
+      {/* Right panel — sign-in form (no signup, invite-only) */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md space-y-8">
           <div className="lg:hidden flex items-center gap-3 mb-8">
@@ -113,30 +100,13 @@ export default function AdminLogin() {
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold text-foreground">
-              {mode === "signin" ? "Welcome back" : "Create your account"}
-            </h2>
+            <h2 className="text-2xl font-bold text-foreground">Welcome back</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              {mode === "signin"
-                ? "Sign in to your AchievHR admin account"
-                : "Sign up for platform access — your account starts with no roles assigned. A super admin must grant your permissions."}
+              Sign in to your AchievHR admin account
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {mode === "signup" && (
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Display name</label>
-                <input
-                  type="text"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-secondary/50 border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
-                  placeholder="Jane Doe"
-                />
-              </div>
-            )}
-
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">Email address</label>
               <div className="relative">
@@ -146,6 +116,7 @@ export default function AdminLogin() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  autoComplete="email"
                   className="w-full pl-10 pr-4 py-2.5 bg-secondary/50 border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
                   placeholder="you@company.com"
                 />
@@ -155,9 +126,7 @@ export default function AdminLogin() {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-sm font-medium text-foreground">Password</label>
-                {mode === "signin" && (
-                  <button type="button" className="text-xs text-primary hover:underline">Forgot password?</button>
-                )}
+                <button type="button" className="text-xs text-primary hover:underline">Forgot password?</button>
               </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -166,7 +135,7 @@ export default function AdminLogin() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength={6}
+                  autoComplete="current-password"
                   className="w-full pl-10 pr-10 py-2.5 bg-secondary/50 border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
                   placeholder="••••••••"
                 />
@@ -187,7 +156,7 @@ export default function AdminLogin() {
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                 <>
-                  {mode === "signin" ? "Sign in to AchievHR" : "Create account"}
+                  Sign in to AchievHR
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -195,20 +164,12 @@ export default function AdminLogin() {
           </form>
 
           <div className="text-center space-y-2">
-            <button
-              type="button"
-              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-              className="text-xs text-muted-foreground hover:text-foreground"
-            >
-              {mode === "signin" ? "Need an account? Sign up" : "Already have an account? Sign in"}
-            </button>
             <p className="text-xs text-muted-foreground">
               Protected by MFA · <span className="text-primary cursor-pointer hover:underline">SAML SSO available</span>
             </p>
-            <Link to="/tenant" className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground">
-              <Building2 className="w-3 h-3" />
-              Tenant user? Sign in here
-            </Link>
+            <p className="text-[11px] text-muted-foreground/70">
+              Access is invite-only. Contact your administrator to request an account.
+            </p>
           </div>
         </div>
       </div>
