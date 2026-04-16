@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Save, Shield, Fingerprint, Globe, Timer, Lock, Plus, Trash2, Database, FileText, Loader2, AlertTriangle } from "lucide-react";
+import { Save, Shield, Fingerprint, Globe, Timer, Lock, Plus, Trash2, Database, FileText, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
