@@ -61,7 +61,7 @@ const bottomItems = [
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(["workforce"]);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(["workforce", "roles-access"]);
   const navigate = useNavigate();
   const location = useLocation();
 
