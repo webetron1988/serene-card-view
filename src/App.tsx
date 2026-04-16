@@ -21,6 +21,8 @@ import Tenants from "@/pages/Tenants";
 import License from "@/pages/License";
 import AuditLog from "@/pages/AuditLog";
 import Packages from "@/pages/Packages";
+import PermissionMatrix from "@/pages/roles/PermissionMatrix";
+import RolesAccess from "@/pages/roles/RolesAccess";
 
 // Settings
 import { AppShell } from "@/components/layout/AppShell";
@@ -73,7 +75,9 @@ export default function App() {
             <Route path="/app/admin/dashboard" element={Admin(<Dashboard />)} />
             <Route path="/app/admin/profile" element={Admin(<MyProfile />)} />
             <Route path="/app/admin/users" element={Admin(<Users />)} />
-            <Route path="/app/admin/roles" element={Admin(<Roles />)} />
+            <Route path="/app/admin/roles" element={<Navigate to="/app/admin/roles/permissions" replace />} />
+            <Route path="/app/admin/roles/permissions" element={Admin(<PermissionMatrix />)} />
+            <Route path="/app/admin/roles/list" element={Admin(<RolesAccess />)} />
             <Route path="/app/admin/workforce/employees" element={Admin(<EmployeeDirectory />)} />
             <Route path="/app/admin/org/chart" element={Admin(<OrgChart />)} />
             <Route path="/app/admin/org/units" element={Admin(<OrgUnits />)} />
