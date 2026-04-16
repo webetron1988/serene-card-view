@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Bell, Settings, Search, ChevronDown, User, LogOut, Circle, Clock, MinusCircle, Moon, WifiOff } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,10 +30,23 @@ interface HeaderProps {
 
 export function Header({ title, subtitle }: HeaderProps) {
   const navigate = useNavigate();
+  const { tenantCode } = useParams<{ tenantCode?: string }>();
+  const { user, profile, signOut } = useAuth();
   const [currentStatus, setCurrentStatus] = useState<string>("available");
 
   const activeStatus = statusOptions.find(s => s.value === currentStatus) ?? statusOptions[0];
   const ActiveStatusIcon = activeStatus.icon;
+
+  const displayName = profile?.display_name || user?.email?.split("@")[0] || "User";
+  const userEmail = profile?.email || user?.email || "";
+  const initial = (displayName[0] || "U").toUpperCase();
+  const isTenant = Boolean(tenantCode);
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Signed out");
+    navigate(isTenant ? `/tenant/${tenantCode}/login` : "/admin/login", { replace: true });
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border/50">
@@ -75,7 +90,7 @@ export function Header({ title, subtitle }: HeaderProps) {
               <button className="flex items-center gap-2.5 pl-1 pr-2.5 py-1 rounded-xl hover:bg-muted transition-colors focus:outline-none">
                 <div className="relative">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/60 text-primary-foreground flex items-center justify-center text-xs font-bold shadow-sm">
-                    A
+                    {initial}
                   </div>
                   <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card ${
                     currentStatus === "available" ? "bg-emerald-500" :
@@ -86,8 +101,8 @@ export function Header({ title, subtitle }: HeaderProps) {
                   }`} />
                 </div>
                 <div className="hidden lg:block text-left">
-                  <p className="text-xs font-semibold text-foreground leading-none">Admin User</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Super Admin</p>
+                  <p className="text-xs font-semibold text-foreground leading-none truncate max-w-[120px]">{displayName}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{isTenant ? "Tenant User" : "Platform Admin"}</p>
                 </div>
                 <ChevronDown className="w-3 h-3 text-muted-foreground/60 hidden lg:block" />
               </button>
@@ -99,7 +114,7 @@ export function Header({ title, subtitle }: HeaderProps) {
                 <div className="flex items-start gap-3">
                   <div className="relative shrink-0">
                     <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary to-primary/60 text-primary-foreground flex items-center justify-center text-sm font-bold shadow-md">
-                      A
+                      {initial}
                     </div>
                     <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-card ${
                       currentStatus === "available" ? "bg-emerald-500" :
@@ -110,9 +125,9 @@ export function Header({ title, subtitle }: HeaderProps) {
                     }`} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-foreground truncate">Admin User</p>
-                    <p className="text-[11px] text-muted-foreground font-medium">Super Admin</p>
-                    <p className="text-[11px] text-muted-foreground/80 truncate mt-0.5">admin@achievhr.com</p>
+                    <p className="text-sm font-semibold text-foreground truncate">{displayName}</p>
+                    <p className="text-[11px] text-muted-foreground font-medium">{isTenant ? "Tenant User" : "Platform Admin"}</p>
+                    <p className="text-[11px] text-muted-foreground/80 truncate mt-0.5">{userEmail}</p>
                   </div>
                 </div>
               </div>
@@ -172,7 +187,10 @@ export function Header({ title, subtitle }: HeaderProps) {
               <DropdownMenuSeparator className="mx-2" />
 
               <div className="p-1.5">
-                <DropdownMenuItem className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/8">
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/8"
+                >
                   <LogOut className="w-4 h-4" />
                   <span>Log Out</span>
                 </DropdownMenuItem>
