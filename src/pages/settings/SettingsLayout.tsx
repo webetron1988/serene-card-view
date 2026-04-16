@@ -1,7 +1,8 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   Settings, Shield, Wallet, Brain, ShieldAlert, Key, Mail,
-  BellRing, Puzzle, Palette, Globe, UserPlus, Users, Building2, FolderTree
+  BellRing, Puzzle, Palette, Globe, UserPlus, Users, Building2, FolderTree,
+  Scale, FileArchive
 } from "lucide-react";
 
 const settingsNav = [
@@ -12,6 +13,8 @@ const settingsNav = [
   { label: "Bot Categories", icon: FolderTree, path: "/admin/settings/bot-categories" },
   { label: "Branding", icon: Palette, path: "/admin/settings/branding" },
   { label: "Security", icon: Shield, path: "/admin/settings/security" },
+  { label: "Policy & Governance", icon: Scale, path: "/admin/settings/policy" },
+  { label: "Document Vault", icon: FileArchive, path: "/admin/settings/document-vault" },
   { label: "Payments", icon: Wallet, path: "/admin/settings/payments" },
   { label: "AI Models", icon: Brain, path: "/admin/settings/ai-models" },
   { label: "Guardrails", icon: ShieldAlert, path: "/admin/settings/guardrails" },

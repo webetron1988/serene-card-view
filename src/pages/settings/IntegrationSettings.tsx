@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Save, CheckCircle2, Circle, ChevronDown, ChevronUp, ShieldCheck, AlertTriangle, Loader2 } from "lucide-react";
+import { CheckCircle2, Circle, ChevronDown, ChevronUp, Save, ShieldCheck, AlertTriangle, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,67 +16,87 @@ interface Integration {
   icon: string;
   fields: { key: string; label: string; placeholder: string; value: string; sensitive: boolean }[];
   isVerified?: boolean;
+  hasCredentials?: boolean;
 }
 
 const defaultIntegrations: Integration[] = [
   {
-    id: "slack", name: "Slack", category: "Communication", description: "Send notifications and alerts to Slack channels.",
-    status: "connected", icon: "💬", isVerified: true,
-    fields: [{ key: "webhook_url", label: "Webhook URL", placeholder: "https://hooks.slack.com/services/...", value: "https://hooks.slack.com/services/T00/B00/xxxx", sensitive: true }],
-  },
-  {
-    id: "teams", name: "Microsoft Teams", category: "Communication", description: "Connect Teams for notifications and HR workflows.",
-    status: "available", icon: "💼",
+    id: "azure_ad", name: "Azure AD / Entra ID", category: "Identity", description: "Enterprise SSO and directory sync with Microsoft Azure Active Directory.",
+    status: "connected", icon: "🔐", isVerified: true, hasCredentials: true,
     fields: [
-      { key: "tenant_id", label: "Tenant ID", placeholder: "Azure AD Tenant ID", value: "", sensitive: false },
-      { key: "client_id", label: "Client ID", placeholder: "App Client ID", value: "", sensitive: false },
+      { key: "tenant_id", label: "Tenant ID", placeholder: "Enter Azure AD Tenant ID", value: "••••-••••-••••", sensitive: false },
+      { key: "client_id", label: "Client ID", placeholder: "Enter App Client ID", value: "••••-••••-••••", sensitive: false },
+      { key: "client_secret", label: "Client Secret", placeholder: "Enter Client Secret", value: "", sensitive: true },
     ],
   },
   {
-    id: "whatsapp", name: "WhatsApp Business", category: "Communication", description: "Send notifications and reminders via WhatsApp.",
-    status: "available", icon: "📱",
-    fields: [{ key: "api_token", label: "API Token", placeholder: "WhatsApp Business API token", value: "", sensitive: true }],
-  },
-  {
-    id: "bamboohr", name: "BambooHR", category: "HRIS", description: "Sync employee data from BambooHR.",
-    status: "available", icon: "🌿",
+    id: "bamboohr", name: "BambooHR", category: "HRIS", description: "Sync employee data, time-off, and org charts from BambooHR.",
+    status: "available", icon: "🎋",
     fields: [
       { key: "subdomain", label: "Subdomain", placeholder: "your-company.bamboohr.com", value: "", sensitive: false },
       { key: "api_key", label: "API Key", placeholder: "Enter BambooHR API key", value: "", sensitive: true },
     ],
   },
   {
-    id: "workday", name: "Workday", category: "HRIS", description: "Enterprise HCM integration with Workday.",
-    status: "available", icon: "🏢",
+    id: "workday", name: "Workday", category: "HRIS", description: "Enterprise HR, payroll, and talent management integration.",
+    status: "available", icon: "📊",
     fields: [
-      { key: "tenant_url", label: "Tenant URL", placeholder: "https://impl.workday.com/tenant", value: "", sensitive: false },
-      { key: "client_id", label: "Client ID", placeholder: "Enter Client ID", value: "", sensitive: true },
-      { key: "client_secret", label: "Client Secret", placeholder: "Enter Client Secret", value: "", sensitive: true },
+      { key: "tenant_url", label: "Tenant URL", placeholder: "https://wd5-impl-services.workday.com", value: "", sensitive: false },
+      { key: "username", label: "Integration Username", placeholder: "ISU_username", value: "", sensitive: false },
+      { key: "password", label: "Integration Password", placeholder: "Enter password", value: "", sensitive: true },
     ],
   },
   {
-    id: "greenhouse", name: "Greenhouse", category: "ATS", description: "Integrate applicant tracking and recruitment pipeline.",
-    status: "available", icon: "🌱",
-    fields: [{ key: "api_key", label: "API Key", placeholder: "Enter Greenhouse API key", value: "", sensitive: true }],
-  },
-  {
-    id: "google_workspace", name: "Google Workspace", category: "Productivity", description: "Calendar, Drive, and SSO integration.",
-    status: "available", icon: "📁",
-    fields: [{ key: "service_account", label: "Service Account Key (JSON)", placeholder: "Paste service account JSON", value: "", sensitive: true }],
-  },
-  {
-    id: "azure_ad", name: "Azure AD / Entra", category: "Identity", description: "Enterprise SSO and directory sync.",
-    status: "available", icon: "🔐",
+    id: "greenhouse", name: "Greenhouse", category: "ATS", description: "Applicant tracking and recruitment pipeline integration.",
+    status: "available", icon: "🌿",
     fields: [
-      { key: "tenant_id", label: "Tenant ID", placeholder: "Azure AD Tenant ID", value: "", sensitive: false },
-      { key: "client_id", label: "Application ID", placeholder: "App Registration ID", value: "", sensitive: false },
-      { key: "client_secret", label: "Client Secret", placeholder: "Enter Client Secret", value: "", sensitive: true },
+      { key: "api_key", label: "API Key", placeholder: "Enter Greenhouse API key", value: "", sensitive: true },
+    ],
+  },
+  {
+    id: "slack", name: "Slack", category: "Communication", description: "Send notifications and alerts to Slack channels.",
+    status: "connected", icon: "💬", isVerified: true, hasCredentials: true,
+    fields: [
+      { key: "webhook_url", label: "Webhook URL", placeholder: "https://hooks.slack.com/services/...", value: "https://hooks.slack.com/services/T00/B00/xxxx", sensitive: true },
+    ],
+  },
+  {
+    id: "teams", name: "Microsoft Teams", category: "Communication", description: "Send notifications and integrate with Teams channels.",
+    status: "available", icon: "💼",
+    fields: [
+      { key: "tenant_id", label: "Tenant ID", placeholder: "Enter Azure AD Tenant ID", value: "", sensitive: false },
+      { key: "client_id", label: "Client ID", placeholder: "Enter App Client ID", value: "", sensitive: false },
+    ],
+  },
+  {
+    id: "whatsapp", name: "WhatsApp Business", category: "Communication", description: "Send notifications and reminders via WhatsApp.",
+    status: "available", icon: "📱",
+    fields: [
+      { key: "api_token", label: "API Token", placeholder: "Enter WhatsApp Business API token", value: "", sensitive: true },
+    ],
+  },
+  {
+    id: "razorpay", name: "Razorpay", category: "Payments", description: "Payment gateway for India with UPI, cards, and net banking.",
+    status: "available", icon: "💳",
+    fields: [
+      { key: "key_id", label: "Key ID", placeholder: "rzp_live_...", value: "", sensitive: false },
+      { key: "key_secret", label: "Key Secret", placeholder: "Enter Key Secret", value: "", sensitive: true },
+    ],
+  },
+  {
+    id: "stripe", name: "Stripe", category: "Payments", description: "Global payment processing for subscriptions and invoices.",
+    status: "available", icon: "💰",
+    fields: [
+      { key: "publishable_key", label: "Publishable Key", placeholder: "pk_live_...", value: "", sensitive: false },
+      { key: "secret_key", label: "Secret Key", placeholder: "sk_live_...", value: "", sensitive: true },
     ],
   },
   {
     id: "zapier", name: "Zapier", category: "Automation", description: "Connect to 5000+ apps through Zapier workflows.",
     status: "available", icon: "⚡",
-    fields: [{ key: "api_key", label: "API Key", placeholder: "Enter Zapier API key", value: "", sensitive: true }],
+    fields: [
+      { key: "api_key", label: "API Key", placeholder: "Enter Zapier API key", value: "", sensitive: true },
+    ],
   },
 ];
 
@@ -85,6 +105,7 @@ export default function IntegrationSettings() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filter, setFilter] = useState("all");
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
 
   const categories = ["all", ...Array.from(new Set(integrations.map(i => i.category)))];
   const filtered = filter === "all" ? integrations : integrations.filter(i => i.category === filter);
@@ -97,20 +118,26 @@ export default function IntegrationSettings() {
     }));
   };
 
-  const handleSave = async (integration: Integration) => {
+  const handleSave = (integration: Integration) => {
     setSavingId(integration.id);
-    await new Promise(r => setTimeout(r, 800));
-    setIntegrations(ints => ints.map(i =>
-      i.id === integration.id ? { ...i, status: "connected" as const, isVerified: true } : i
-    ));
-    toast.success(`${integration.name} connected successfully`);
-    setSavingId(null);
+    setTimeout(() => {
+      setIntegrations(ints => ints.map(i => i.id === integration.id ? { ...i, status: "connected" as const, hasCredentials: true, isVerified: false } : i));
+      toast.success(`${integration.name} credentials saved`);
+      setSavingId(null);
+    }, 800);
+  };
+
+  const handleVerify = (integration: Integration) => {
+    setVerifyingId(integration.id);
+    setTimeout(() => {
+      setIntegrations(ints => ints.map(i => i.id === integration.id ? { ...i, isVerified: true } : i));
+      toast.success(`${integration.name} credentials verified ✓`);
+      setVerifyingId(null);
+    }, 1200);
   };
 
   const handleDisconnect = (integration: Integration) => {
-    setIntegrations(ints => ints.map(i =>
-      i.id === integration.id ? { ...i, status: "available" as const, isVerified: false } : i
-    ));
+    setIntegrations(ints => ints.map(i => i.id === integration.id ? { ...i, status: "available" as const, isVerified: false, hasCredentials: false } : i));
     toast.success(`${integration.name} disconnected`);
   };
 
@@ -123,11 +150,7 @@ export default function IntegrationSettings() {
 
       <div className="flex gap-2 flex-wrap">
         {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setFilter(cat)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${filter === cat ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground hover:bg-muted"}`}
-          >
+          <button key={cat} onClick={() => setFilter(cat)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${filter === cat ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground hover:bg-muted"}`}>
             {cat === "all" ? "All" : cat}
           </button>
         ))}
@@ -139,10 +162,7 @@ export default function IntegrationSettings() {
 
         return (
           <Card key={integration.id} className="overflow-hidden">
-            <div
-              className="flex items-center justify-between px-6 py-4 cursor-pointer hover:bg-muted/30 transition-colors"
-              onClick={() => setExpandedId(isExpanded ? null : integration.id)}
-            >
+            <div className="flex items-center justify-between px-6 py-4 cursor-pointer hover:bg-muted/30 transition-colors" onClick={() => setExpandedId(isExpanded ? null : integration.id)}>
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{integration.icon}</span>
                 <div>
@@ -157,7 +177,7 @@ export default function IntegrationSettings() {
                         <ShieldCheck className="w-3 h-3" strokeWidth={1.5} />Verified
                       </Badge>
                     )}
-                    {isConnected && !integration.isVerified && (
+                    {isConnected && integration.hasCredentials && !integration.isVerified && (
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-amber-600 bg-amber-50 border-amber-200 gap-0.5">
                         <AlertTriangle className="w-3 h-3" strokeWidth={1.5} />Unverified
                       </Badge>
@@ -188,12 +208,14 @@ export default function IntegrationSettings() {
                       Disconnect
                     </Button>
                   )}
+                  {isConnected && integration.hasCredentials && (
+                    <Button size="sm" variant="outline" disabled={verifyingId === integration.id} onClick={() => handleVerify(integration)} className="text-xs gap-1">
+                      {verifyingId === integration.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" strokeWidth={1.5} />}
+                      {verifyingId === integration.id ? "Verifying..." : "Verify"}
+                    </Button>
+                  )}
                   <Button size="sm" disabled={savingId === integration.id} onClick={() => handleSave(integration)} className="text-xs">
-                    {savingId === integration.id ? (
-                      <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                    ) : (
-                      <Save className="w-3.5 h-3.5 mr-1.5" strokeWidth={1.5} />
-                    )}
+                    {savingId === integration.id ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Save className="w-3.5 h-3.5 mr-1.5" strokeWidth={1.5} />}
                     {savingId === integration.id ? "Saving..." : isConnected ? "Save Changes" : "Save & Connect"}
                   </Button>
                 </div>
