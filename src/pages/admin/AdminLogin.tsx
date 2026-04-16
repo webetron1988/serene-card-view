@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Briefcase, Eye, EyeOff, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export default function AdminLogin() {
@@ -28,6 +29,22 @@ export default function AdminLogin() {
         toast.error(error.message.includes("Invalid") ? "Invalid email or password" : error.message);
         return;
       }
+
+      // Tier guard: only platform-tier accounts may use this login
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("user_tier")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (prof?.user_tier !== "platform") {
+          await supabase.auth.signOut();
+          toast.error("This account is not a platform admin. Use the tenant login.");
+          return;
+        }
+      }
+
       toast.success("Welcome back");
       navigate(from, { replace: true });
     } finally {

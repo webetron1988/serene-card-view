@@ -48,6 +48,18 @@ export default function TenantLogin() {
         return;
       }
 
+      // Tier guard: platform-tier accounts cannot use tenant login
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("user_tier")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (prof?.user_tier === "platform") {
+        await supabase.auth.signOut();
+        toast.error("Platform admin accounts must sign in at /app/admin/login.");
+        return;
+      }
+
       const { data: membership, error: memberErr } = await supabase
         .from("tenant_members")
         .select("tenant_id, tenants!inner(code, name)")
