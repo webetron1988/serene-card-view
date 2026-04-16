@@ -6,6 +6,9 @@ import { RequireAuth } from "@/components/auth/RequireAuth";
 import { RequireTenantAccess } from "@/components/auth/RequireTenantAccess";
 
 import AdminLogin from "@/pages/admin/AdminLogin";
+import AcceptInvite from "@/pages/admin/AcceptInvite";
+import ForgotPassword from "@/pages/admin/ForgotPassword";
+import ResetPassword from "@/pages/admin/ResetPassword";
 import Dashboard from "@/pages/Dashboard";
 import MyProfile from "@/pages/MyProfile";
 import Users from "@/pages/Users";
@@ -69,8 +72,14 @@ export default function App() {
             {/* Root */}
             <Route path="/" element={<Navigate to="/app/admin/dashboard" replace />} />
 
+            {/* ─── Public auth pages (linked from emails) ─── */}
+            <Route path="/admin/accept-invite" element={<AcceptInvite />} />
+            <Route path="/admin/forgot-password" element={<ForgotPassword />} />
+            <Route path="/admin/reset-password" element={<ResetPassword />} />
+
             {/* ─── Platform Admin (/app/admin/*) ─── */}
             <Route path="/app/admin/login" element={<AdminLogin />} />
+            <Route path="/app/admin/forgot-password" element={<ForgotPassword />} />
             <Route path="/app/admin" element={<Navigate to="/app/admin/dashboard" replace />} />
             <Route path="/app/admin/dashboard" element={Admin(<Dashboard />)} />
             <Route path="/app/admin/profile" element={Admin(<MyProfile />)} />
