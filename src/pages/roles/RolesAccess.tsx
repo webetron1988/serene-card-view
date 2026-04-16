@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,108 +10,125 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Shield, ShieldCheck, Lock, Pencil, Archive, Trash2, ExternalLink, Users, Sparkles } from "lucide-react";
-
-// ─────────── Static demo data (UI only) — see mem://architecture/role-model ───────────
-const PLATFORM_DEFAULT_ROLES = [
-  {
-    role: "super_admin",
-    label: "Super Admin",
-    description: "Full platform access. All permissions are granted and uneditable.",
-    permCount: 22,
-    note: "Uneditable — system-protected",
-    tier: "platform" as const,
-  },
-  {
-    role: "admin",
-    label: "Admin",
-    description: "Day-to-day platform operations. Permissions controlled by Super Admin only.",
-    permCount: 15,
-    note: "Editable by Super Admin",
-    tier: "platform" as const,
-  },
-  {
-    role: "tenant",
-    label: "Tenant",
-    description: "Reserved role for tenant-tier users. Managed in the tenant workspace (coming soon).",
-    permCount: 10,
-    note: "Tenant tier — placeholder",
-    tier: "tenant" as const,
-  },
-];
-
-type CustomRole = {
-  id: string;
-  name: string;
-  description: string;
-  color: string;
-  is_active: boolean;
-  permCount: number;
-  userCount: number;
-};
-
-const INITIAL_CUSTOM_ROLES: CustomRole[] = [
-  { id: "c1", name: "Billing Manager", description: "Manages tenant subscriptions, invoices, and payment gateways.", color: "#10b981", is_active: true, permCount: 7, userCount: 2 },
-  { id: "c2", name: "Onboarding Specialist", description: "Provisions new tenants, assigns plans, and runs welcome sequences.", color: "#0ea5e9", is_active: true, permCount: 9, userCount: 3 },
-  { id: "c3", name: "AI Operations", description: "Manages AI model configuration, guardrails, and usage analytics.", color: "#8b5cf6", is_active: true, permCount: 6, userCount: 1 },
-  { id: "c4", name: "Compliance Officer", description: "Reviews audit trails, data retention, and tenant policy compliance.", color: "#f59e0b", is_active: true, permCount: 4, userCount: 0 },
-  { id: "c5", name: "Legacy Reseller Manager", description: "Old reseller workflow — replaced by Onboarding Specialist.", color: "#6366f1", is_active: false, permCount: 5, userCount: 1 },
-];
+import { Plus, Shield, ShieldCheck, Lock, Pencil, Archive, Trash2, ExternalLink, Sparkles, Loader2, AlertCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRolesData } from "@/hooks/useRolesData";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const SAMPLE_ROLES = [
-  { name: "Billing Manager", description: "Manages tenant subscriptions, invoices, and payment gateways.", color: "#10b981" },
-  { name: "Onboarding Specialist", description: "Provisions new tenants, assigns plans, and runs welcome sequences.", color: "#0ea5e9" },
-  { name: "AI Operations", description: "Manages AI model configuration, guardrails, and usage analytics.", color: "#8b5cf6" },
-  { name: "Compliance Officer", description: "Reviews audit trails, data retention, and tenant policy compliance.", color: "#f59e0b" },
+  { name: "Billing Manager", description: "Manages tenant subscriptions, invoices, and payment gateways." },
+  { name: "Onboarding Specialist", description: "Provisions new tenants, assigns plans, and runs welcome sequences." },
+  { name: "AI Operations", description: "Manages AI model configuration, guardrails, and usage analytics." },
+  { name: "Compliance Officer", description: "Reviews audit trails, data retention, and tenant policy compliance." },
 ];
 
 export default function RolesAccess() {
   const navigate = useNavigate();
-  const [customRoles, setCustomRoles] = useState<CustomRole[]>(INITIAL_CUSTOM_ROLES);
+  const { hasPlatformRole, loading: authLoading, user } = useAuth();
+  const { permissions, platformCustomRoles, grants, loading, error, refresh } = useRolesData();
+
+  const isSuperAdmin = hasPlatformRole("super_admin");
+  const isAdmin = hasPlatformRole("admin");
+  // Admin can create roles only if they hold roles.create
+  const adminCanCreate = useMemo(
+    () => grants.some((g) => g.role_kind === "system" && g.role_ref === "admin" && g.permission_key === "roles.create"),
+    [grants]
+  );
+  const canCreate = isSuperAdmin || (isAdmin && adminCanCreate);
+
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingRole, setEditingRole] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ name: "", description: "", color: "#6366f1" });
-  const [newRole, setNewRole] = useState({ name: "", description: "", color: "#6366f1" });
+  const [editForm, setEditForm] = useState({ name: "", description: "" });
+  const [newRole, setNewRole] = useState({ name: "", description: "" });
+  const [submitting, setSubmitting] = useState(false);
 
-  const activeCustomRoles = customRoles.filter((r) => r.is_active);
-  const archivedCustomRoles = customRoles.filter((r) => !r.is_active);
+  const activeCustomRoles = platformCustomRoles.filter((r) => !r.is_archived);
+  const archivedCustomRoles = platformCustomRoles.filter((r) => r.is_archived);
+
+  // System role permission counts (read from server grants)
+  const systemPermCount = useMemo(() => {
+    const totals: Record<string, number> = { super_admin: permissions.length, admin: 0, tenant: 0 };
+    for (const g of grants) {
+      if (g.role_kind !== "system") continue;
+      if (g.role_ref === "super_admin") continue; // always full
+      totals[g.role_ref] = (totals[g.role_ref] ?? 0) + 1;
+    }
+    return totals;
+  }, [grants, permissions.length]);
+
+  const customPermCount = (roleId: string) =>
+    grants.filter((g) => g.role_kind === "platform_custom" && g.role_ref === roleId).length;
 
   const goToMatrix = () => navigate("/app/admin/roles/permissions");
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!newRole.name.trim()) return;
-    const id = `c${Date.now()}`;
-    setCustomRoles((prev) => [
-      ...prev,
-      { id, name: newRole.name, description: newRole.description, color: newRole.color, is_active: true, permCount: 0, userCount: 0 },
-    ]);
-    setNewRole({ name: "", description: "", color: "#6366f1" });
-    setShowCreateDialog(false);
+    setSubmitting(true);
+    try {
+      const { error: insErr } = await supabase
+        .from("platform_custom_roles")
+        .insert({ name: newRole.name.trim(), description: newRole.description.trim() || null, created_by: user?.id ?? null });
+      if (insErr) throw insErr;
+      toast.success(`Role "${newRole.name}" created`);
+      setNewRole({ name: "", description: "" });
+      setShowCreateDialog(false);
+      await refresh();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to create role";
+      toast.error(msg);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleArchive = (id: string) => {
-    setCustomRoles((prev) => prev.map((r) => (r.id === id ? { ...r, is_active: false } : r)));
+  const handleArchive = async (id: string) => {
+    const { error: err } = await supabase.from("platform_custom_roles").update({ is_archived: true }).eq("id", id);
+    if (err) toast.error(err.message);
+    else { toast.success("Role archived"); await refresh(); }
   };
 
-  const handleRestore = (id: string) => {
-    setCustomRoles((prev) => prev.map((r) => (r.id === id ? { ...r, is_active: true } : r)));
+  const handleRestore = async (id: string) => {
+    const { error: err } = await supabase.from("platform_custom_roles").update({ is_archived: false }).eq("id", id);
+    if (err) toast.error(err.message);
+    else { toast.success("Role restored"); await refresh(); }
   };
 
-  const handleDelete = (id: string) => {
-    setCustomRoles((prev) => prev.filter((r) => r.id !== id));
+  const handleDelete = async (id: string) => {
+    const { error: err } = await supabase.from("platform_custom_roles").delete().eq("id", id);
+    if (err) toast.error(err.message);
+    else { toast.success("Role deleted"); await refresh(); }
   };
 
-  const handleEditSave = () => {
+  const handleEditSave = async () => {
     if (!editingRole) return;
-    setCustomRoles((prev) =>
-      prev.map((r) => (r.id === editingRole ? { ...r, name: editForm.name, description: editForm.description, color: editForm.color } : r)),
-    );
-    setEditingRole(null);
+    const { error: err } = await supabase
+      .from("platform_custom_roles")
+      .update({ name: editForm.name.trim(), description: editForm.description.trim() || null })
+      .eq("id", editingRole);
+    if (err) toast.error(err.message);
+    else { toast.success("Role updated"); setEditingRole(null); await refresh(); }
   };
 
   const useSample = (sample: (typeof SAMPLE_ROLES)[0]) => {
-    setNewRole({ name: sample.name, description: sample.description, color: sample.color });
+    setNewRole({ name: sample.name, description: sample.description });
   };
+
+  if (authLoading || loading) {
+    return (
+      <AppShell>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </AppShell>
+    );
+  }
+
+  const PLATFORM_DEFAULT_ROLES = [
+    { role: "super_admin", label: "Super Admin", description: "Full platform access. All permissions are granted and uneditable.", permCount: systemPermCount.super_admin, note: "Uneditable — system-protected", tier: "platform" as const },
+    { role: "admin", label: "Admin", description: "Day-to-day platform operations. Permissions controlled by Super Admin only.", permCount: systemPermCount.admin, note: "Editable by Super Admin", tier: "platform" as const },
+    { role: "tenant", label: "Tenant", description: "Reserved role for tenant-tier users. Managed in the tenant workspace (coming soon).", permCount: systemPermCount.tenant, note: "Tenant tier — placeholder", tier: "tenant" as const },
+  ];
 
   return (
     <AppShell>
@@ -124,11 +141,20 @@ export default function RolesAccess() {
               Manage default and custom roles for the platform. Configure permissions in the Permission Matrix.
             </p>
           </div>
-          <Button onClick={() => setShowCreateDialog(true)}>
+          <Button onClick={() => setShowCreateDialog(true)} disabled={!canCreate} title={!canCreate ? "Requires roles.create permission" : undefined}>
             <Plus className="h-4 w-4 mr-2" />
             Create Custom Role
           </Button>
         </div>
+
+        {error && (
+          <Card className="border-destructive/40 bg-destructive/5">
+            <CardContent className="py-3 text-sm text-destructive flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" />
+              {error}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Section 1: Default Roles */}
         <div className="space-y-3">
@@ -148,12 +174,8 @@ export default function RolesAccess() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <Lock className="h-3.5 w-3.5 text-muted-foreground" />
                       <CardTitle className="text-sm font-semibold">{role.label}</CardTitle>
-                      {role.role === "super_admin" && (
-                        <Badge variant="secondary" className="text-[10px]">Uneditable</Badge>
-                      )}
-                      {role.tier === "tenant" && (
-                        <Badge variant="outline" className="text-[10px]">Tenant tier</Badge>
-                      )}
+                      {role.role === "super_admin" && (<Badge variant="secondary" className="text-[10px]">Uneditable</Badge>)}
+                      {role.tier === "tenant" && (<Badge variant="outline" className="text-[10px]">Tenant tier</Badge>)}
                     </div>
                     <Switch checked={true} disabled className="opacity-60" />
                   </div>
@@ -162,9 +184,7 @@ export default function RolesAccess() {
                 <CardContent className="pt-0">
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col gap-1">
-                      <Badge variant="outline" className="text-xs w-fit">
-                        {role.permCount} permissions
-                      </Badge>
+                      <Badge variant="outline" className="text-xs w-fit">{role.permCount} permissions</Badge>
                       <span className="text-[10px] text-muted-foreground">{role.note}</span>
                     </div>
                     {role.tier === "platform" && (
@@ -199,7 +219,7 @@ export default function RolesAccess() {
                 <p className="text-muted-foreground text-sm text-center max-w-sm mb-4">
                   Create specialized roles like Billing Manager, Onboarding Specialist, or AI Operations to delegate platform responsibilities.
                 </p>
-                <Button variant="outline" onClick={() => setShowCreateDialog(true)}>
+                <Button variant="outline" onClick={() => setShowCreateDialog(true)} disabled={!canCreate}>
                   <Plus className="h-4 w-4 mr-2" />
                   Create Custom Role
                 </Button>
@@ -207,67 +227,55 @@ export default function RolesAccess() {
             </Card>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {activeCustomRoles.map((role) => (
-                <Card key={role.id}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: role.color }} />
-                        <CardTitle className="text-sm font-semibold truncate">{role.name}</CardTitle>
+              {activeCustomRoles.map((role) => {
+                const permCount = customPermCount(role.id);
+                return (
+                  <Card key={role.id}>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="h-3 w-3 rounded-full shrink-0 bg-emerald-500" />
+                          <CardTitle className="text-sm font-semibold truncate">{role.name}</CardTitle>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost" size="icon" className="h-7 w-7"
+                            disabled={!isSuperAdmin}
+                            onClick={() => { setEditingRole(role.id); setEditForm({ name: role.name, description: role.description ?? "" }); }}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost" size="icon" className="h-7 w-7 text-amber-600 hover:text-amber-700"
+                            disabled={!isSuperAdmin}
+                            onClick={() => handleArchive(role.id)}
+                            title="Archive"
+                          >
+                            <Archive className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          onClick={() => {
-                            setEditingRole(role.id);
-                            setEditForm({ name: role.name, description: role.description, color: role.color });
-                          }}
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-amber-600 hover:text-amber-700"
-                          onClick={() => (role.userCount > 0 ? handleArchive(role.id) : handleDelete(role.id))}
-                          title={role.userCount > 0 ? "Archive (has assigned users)" : "Delete"}
-                        >
-                          {role.userCount > 0 ? <Archive className="h-3.5 w-3.5" /> : <Trash2 className="h-3.5 w-3.5 text-destructive" />}
-                        </Button>
-                      </div>
-                    </div>
-                    <CardDescription className="text-xs mt-1 line-clamp-2">{role.description || "No description"}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs">
-                          {role.permCount} permissions
-                        </Badge>
-                        {role.userCount > 0 && (
-                          <Badge variant="secondary" className="text-xs">
-                            <Users className="h-3 w-3 mr-1" />
-                            {role.userCount} users
-                          </Badge>
+                      <CardDescription className="text-xs mt-1 line-clamp-2">{role.description || "No description"}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="text-xs">{permCount} permissions</Badge>
+                        {permCount === 0 ? (
+                          <Button variant="outline" size="sm" className="text-xs h-7 px-2 text-primary border-primary/30" onClick={goToMatrix}>
+                            <Plus className="h-3 w-3 mr-1" />
+                            Add Permissions
+                          </Button>
+                        ) : (
+                          <Button variant="ghost" size="sm" className="text-xs h-7 px-2 text-primary" onClick={goToMatrix}>
+                            <ExternalLink className="h-3 w-3 mr-1" />
+                            Matrix
+                          </Button>
                         )}
                       </div>
-                      {role.permCount === 0 ? (
-                        <Button variant="outline" size="sm" className="text-xs h-7 px-2 text-primary border-primary/30" onClick={goToMatrix}>
-                          <Plus className="h-3 w-3 mr-1" />
-                          Add Permissions
-                        </Button>
-                      ) : (
-                        <Button variant="ghost" size="sm" className="text-xs h-7 px-2 text-primary" onClick={goToMatrix}>
-                          <ExternalLink className="h-3 w-3 mr-1" />
-                          Matrix
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </div>
@@ -291,7 +299,7 @@ export default function RolesAccess() {
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 min-w-0">
-                          <div className="h-3 w-3 rounded-full shrink-0 opacity-50" style={{ backgroundColor: role.color }} />
+                          <div className="h-3 w-3 rounded-full shrink-0 opacity-50 bg-emerald-500" />
                           <CardTitle className="text-sm font-semibold text-muted-foreground truncate">{role.name}</CardTitle>
                           <Badge variant="secondary" className="text-[10px]">Archived</Badge>
                         </div>
@@ -299,29 +307,18 @@ export default function RolesAccess() {
                       <CardDescription className="text-xs mt-1 line-clamp-2">{role.description}</CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          {role.userCount > 0 && (
-                            <Badge variant="secondary" className="text-xs">
-                              <Users className="h-3 w-3 mr-1" />
-                              {role.userCount} users
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => handleRestore(role.id)}>
-                            Restore
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-destructive"
-                            onClick={() => handleDelete(role.id)}
-                            title="Delete permanently"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="outline" size="sm" className="text-xs h-7" disabled={!isSuperAdmin} onClick={() => handleRestore(role.id)}>
+                          Restore
+                        </Button>
+                        <Button
+                          variant="ghost" size="icon" className="h-7 w-7 text-destructive"
+                          disabled={!isSuperAdmin}
+                          onClick={() => handleDelete(role.id)}
+                          title="Delete permanently"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -353,46 +350,17 @@ export default function RolesAccess() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="role-name">Name</Label>
-                <Input
-                  id="role-name"
-                  placeholder="e.g. Billing Manager"
-                  value={newRole.name}
-                  onChange={(e) => setNewRole({ ...newRole, name: e.target.value })}
-                />
+                <Input id="role-name" placeholder="e.g. Billing Manager" value={newRole.name} onChange={(e) => setNewRole({ ...newRole, name: e.target.value })} />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="role-desc">Description</Label>
-                <Textarea
-                  id="role-desc"
-                  placeholder="What does this role do?"
-                  rows={3}
-                  value={newRole.description}
-                  onChange={(e) => setNewRole({ ...newRole, description: e.target.value })}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="role-color">Color</Label>
-                <div className="flex items-center gap-2">
-                  <input
-                    id="role-color"
-                    type="color"
-                    value={newRole.color}
-                    onChange={(e) => setNewRole({ ...newRole, color: e.target.value })}
-                    className="h-9 w-12 rounded border border-border cursor-pointer"
-                  />
-                  <Input
-                    value={newRole.color}
-                    onChange={(e) => setNewRole({ ...newRole, color: e.target.value })}
-                    className="font-mono text-xs"
-                  />
-                </div>
+                <Textarea id="role-desc" placeholder="What does this role do?" rows={3} value={newRole.description} onChange={(e) => setNewRole({ ...newRole, description: e.target.value })} />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCreate} disabled={!newRole.name.trim()}>
+              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>Cancel</Button>
+              <Button onClick={handleCreate} disabled={!newRole.name.trim() || submitting}>
+                {submitting && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
                 Create Role
               </Button>
             </DialogFooter>
@@ -404,7 +372,7 @@ export default function RolesAccess() {
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Edit Custom Role</DialogTitle>
-              <DialogDescription>Update the name, description, or color of this role.</DialogDescription>
+              <DialogDescription>Update the name or description of this role.</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-2">
               <div className="space-y-1.5">
@@ -413,38 +381,12 @@ export default function RolesAccess() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="edit-desc">Description</Label>
-                <Textarea
-                  id="edit-desc"
-                  rows={3}
-                  value={editForm.description}
-                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="edit-color">Color</Label>
-                <div className="flex items-center gap-2">
-                  <input
-                    id="edit-color"
-                    type="color"
-                    value={editForm.color}
-                    onChange={(e) => setEditForm({ ...editForm, color: e.target.value })}
-                    className="h-9 w-12 rounded border border-border cursor-pointer"
-                  />
-                  <Input
-                    value={editForm.color}
-                    onChange={(e) => setEditForm({ ...editForm, color: e.target.value })}
-                    className="font-mono text-xs"
-                  />
-                </div>
+                <Textarea id="edit-desc" rows={3} value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setEditingRole(null)}>
-                Cancel
-              </Button>
-              <Button onClick={handleEditSave} disabled={!editForm.name.trim()}>
-                Save Changes
-              </Button>
+              <Button variant="outline" onClick={() => setEditingRole(null)}>Cancel</Button>
+              <Button onClick={handleEditSave} disabled={!editForm.name.trim()}>Save Changes</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

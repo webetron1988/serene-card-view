@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,160 +8,210 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, Search, Info, Zap, ArrowRight, Lock, Eye } from "lucide-react";
+import { Shield, Search, Info, Lock, Loader2, Save, RotateCcw, AlertCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRolesData, grantKey, type RoleKind } from "@/hooks/useRolesData";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 // ─────────── Role model (see mem://architecture/role-model) ───────────
-type RoleKey = "super_admin" | "admin" | "tenant" | string; // string = custom role id
+type SystemRoleKey = "super_admin" | "admin" | "tenant";
 
 interface RoleColumn {
-  key: RoleKey;
+  kind: RoleKind;
+  ref: string;                 // enum value or UUID
   label: string;
   color: string;
   description: string;
-  fixed: boolean;          // built-in, non-deletable
-  alwaysFull: boolean;     // super_admin: every perm ticked & locked
+  fixed: boolean;
+  alwaysFull: boolean;         // super_admin: every perm ticked & locked
   tier: "platform" | "tenant";
 }
 
-const FIXED_ROLES: RoleColumn[] = [
-  { key: "super_admin", label: "Super Admin", color: "bg-red-100 text-red-800",     description: "Full platform access. Permissions are uneditable.", fixed: true, alwaysFull: true,  tier: "platform" },
-  { key: "admin",       label: "Admin",       color: "bg-blue-100 text-blue-800",   description: "Day-to-day platform operations. Editable by Super Admin only.", fixed: true, alwaysFull: false, tier: "platform" },
-  { key: "tenant",      label: "Tenant",      color: "bg-orange-100 text-orange-800", description: "Reserved — managed in tenant workspace (coming soon).", fixed: true, alwaysFull: false, tier: "tenant" },
+const SYSTEM_ROLES: RoleColumn[] = [
+  { kind: "system", ref: "super_admin", label: "Super Admin", color: "bg-red-100 text-red-800", description: "Full platform access. Permissions are uneditable.", fixed: true, alwaysFull: true, tier: "platform" },
+  { kind: "system", ref: "admin", label: "Admin", color: "bg-blue-100 text-blue-800", description: "Day-to-day platform operations. Editable by Super Admin only.", fixed: true, alwaysFull: false, tier: "platform" },
+  { kind: "system", ref: "tenant", label: "Tenant", color: "bg-orange-100 text-orange-800", description: "Reserved — managed in tenant workspace (coming soon).", fixed: true, alwaysFull: false, tier: "tenant" },
 ];
-
-const CUSTOM_ROLES: RoleColumn[] = [
-  { key: "billing_manager",   label: "Billing Manager",   color: "bg-emerald-100 text-emerald-800", description: "Manages tenant subscriptions, invoices, payment gateways.", fixed: false, alwaysFull: false, tier: "platform" },
-  { key: "support_agent",     label: "Support Agent",     color: "bg-cyan-100 text-cyan-800",       description: "Read-only tenant access for troubleshooting.",              fixed: false, alwaysFull: false, tier: "platform" },
-];
-
-const ALL_ROLES: RoleColumn[] = [...FIXED_ROLES, ...CUSTOM_ROLES];
-
-type Permission = {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  feature_key?: string;
-};
-
-const FEATURE_LABELS: Record<string, string> = {
-  certificates: "Certificates",
-  api_access: "API Access",
-  webhooks: "Webhooks",
-  advanced_analytics: "Advanced Analytics",
-  ai_features: "AI Features",
-  sso_integration: "SSO",
-  custom_css: "Branding",
-  payment_collection: "Payments",
-};
-
-const DEMO_PERMISSIONS: Permission[] = [
-  { id: "p1", name: "employees.read",       description: "View employee profiles",        category: "Workforce" },
-  { id: "p2", name: "employees.create",     description: "Create new employees",          category: "Workforce" },
-  { id: "p3", name: "employees.update",     description: "Edit employee details",         category: "Workforce" },
-  { id: "p4", name: "employees.delete",     description: "Remove employees",              category: "Workforce" },
-  { id: "p5", name: "org.units.manage",     description: "Manage organization units",     category: "Organization" },
-  { id: "p6", name: "org.positions.manage", description: "Manage positions",              category: "Organization" },
-  { id: "p7", name: "org.locations.manage", description: "Manage locations",              category: "Organization" },
-  { id: "p8", name: "tenants.read",         description: "View tenants",                  category: "Tenants" },
-  { id: "p9", name: "tenants.manage",       description: "Create / suspend tenants",      category: "Tenants" },
-  { id: "p10", name: "tenants.billing",     description: "Manage billing & plans",        category: "Tenants",     feature_key: "payment_collection" },
-  { id: "p11", name: "analytics.basic",     description: "View basic analytics",          category: "Analytics" },
-  { id: "p12", name: "analytics.advanced",  description: "Advanced cross-tenant analytics", category: "Analytics", feature_key: "advanced_analytics" },
-  { id: "p13", name: "integrations.api_keys", description: "Manage API keys",             category: "Integrations", feature_key: "api_access" },
-  { id: "p14", name: "integrations.webhooks", description: "Manage webhooks",             category: "Integrations", feature_key: "webhooks" },
-  { id: "p15", name: "integrations.sso",    description: "Configure SSO",                 category: "Integrations", feature_key: "sso_integration" },
-  { id: "p16", name: "ai.models.manage",    description: "Manage AI models",              category: "AI",          feature_key: "ai_features" },
-  { id: "p17", name: "ai.guardrails.manage", description: "Configure AI guardrails",      category: "AI",          feature_key: "ai_features" },
-  { id: "p18", name: "settings.branding",   description: "Customize branding",            category: "Settings",    feature_key: "custom_css" },
-  { id: "p19", name: "settings.security",   description: "Manage security settings",      category: "Settings" },
-  { id: "p20", name: "settings.audit",      description: "View audit log",                category: "Settings" },
-  { id: "p21", name: "roles.create",        description: "Create custom roles",           category: "Roles & Access" },
-  { id: "p22", name: "roles.manage",        description: "Edit custom role permissions",  category: "Roles & Access" },
-];
-
-// Default permission sets per role (demo)
-const DEFAULT_PERMS: Record<RoleKey, Set<string>> = {
-  super_admin: new Set(DEMO_PERMISSIONS.map((p) => p.id)), // ignored — alwaysFull
-  admin: new Set(["p1","p2","p3","p5","p6","p7","p8","p11","p13","p14","p18","p19","p20","p21","p22"]),
-  tenant: new Set(["p1","p2","p3","p5","p6","p7","p11","p18","p19","p20"]),
-  billing_manager: new Set(["p8","p10"]),
-  support_agent: new Set(["p1","p5","p6","p7","p8","p11","p20"]),
-};
 
 export default function PermissionMatrix() {
-  // Demo viewer toggle — in production this comes from useAuth()
-  const [viewerRole, setViewerRole] = useState<"super_admin" | "admin">("super_admin");
+  const { hasPlatformRole, loading: authLoading, user } = useAuth();
+  const { permissions, platformCustomRoles, grants, loading, error, refresh } = useRolesData();
+
+  // Determine viewer role from real auth
+  const viewerRole: SystemRoleKey | null = useMemo(() => {
+    if (authLoading || !user) return null;
+    if (hasPlatformRole("super_admin")) return "super_admin";
+    if (hasPlatformRole("admin")) return "admin";
+    return null;
+  }, [authLoading, user, hasPlatformRole]);
+
+  // Build column list from system + custom roles, scoped by viewer
+  const allRoles: RoleColumn[] = useMemo(() => {
+    const customCols: RoleColumn[] = platformCustomRoles
+      .filter((r) => !r.is_archived)
+      .map((r) => ({
+        kind: "platform_custom",
+        ref: r.id,
+        label: r.name,
+        color: "bg-emerald-100 text-emerald-800",
+        description: r.description ?? "",
+        fixed: false,
+        alwaysFull: false,
+        tier: "platform",
+      }));
+    return [...SYSTEM_ROLES, ...customCols];
+  }, [platformCustomRoles]);
+
+  const visibleRoles = useMemo<RoleColumn[]>(() => {
+    if (viewerRole === "super_admin") return allRoles;
+    // Admin viewer: hide super_admin column entirely
+    return allRoles.filter((r) => !(r.kind === "system" && r.ref === "super_admin"));
+  }, [viewerRole, allRoles]);
+
+  // Local mutable grants set for the editor (Save button persists)
+  const [draft, setDraft] = useState<Set<string>>(new Set());
+  const [originalDraft, setOriginalDraft] = useState<Set<string>>(new Set());
+  const [saving, setSaving] = useState(false);
+
+  // Hydrate draft from server data
+  useEffect(() => {
+    const next = new Set<string>();
+    for (const g of grants) next.add(grantKey(g.role_kind, g.role_ref, g.permission_key));
+    setDraft(next);
+    setOriginalDraft(new Set(next));
+  }, [grants]);
+
+  const isDirty = useMemo(() => {
+    if (draft.size !== originalDraft.size) return true;
+    for (const k of draft) if (!originalDraft.has(k)) return true;
+    return false;
+  }, [draft, originalDraft]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTab, setSelectedTab] = useState("matrix");
-  const [filterType, setFilterType] = useState<"all" | "core" | "premium">("all");
-  const [grants, setGrants] = useState<Record<RoleKey, Set<string>>>(() => {
-    // Clone defaults so state is mutable
-    const out: Record<RoleKey, Set<string>> = {} as never;
-    for (const k of Object.keys(DEFAULT_PERMS)) out[k] = new Set(DEFAULT_PERMS[k]);
-    return out;
-  });
 
-  // Visible columns based on viewer
-  const visibleRoles = useMemo<RoleColumn[]>(() => {
-    if (viewerRole === "super_admin") return ALL_ROLES;
-    // Admin viewer: hide super_admin column entirely
-    return ALL_ROLES.filter((r) => r.key !== "super_admin");
-  }, [viewerRole]);
-
-  const isCellChecked = (role: RoleColumn, permId: string) => {
+  const isCellChecked = (role: RoleColumn, permKey: string) => {
     if (role.alwaysFull) return true;
-    return grants[role.key]?.has(permId) ?? false;
+    return draft.has(grantKey(role.kind, role.ref, permKey));
   };
 
   // Self-edit lock + viewer scope + tenant placeholder + super_admin lock
   const isCellDisabled = (role: RoleColumn) => {
-    if (role.alwaysFull) return true;             // super_admin always locked
-    if (role.key === "tenant") return true;       // tenant managed elsewhere
-    if (role.key === viewerRole) return true;     // self-edit lock
-    if (viewerRole === "admin" && role.key === "admin") return true; // admin can't edit own
+    if (!viewerRole) return true;
+    if (role.alwaysFull) return true;
+    if (role.kind === "system" && role.ref === "tenant") return true;
+    if (role.kind === "system" && role.ref === viewerRole) return true;
+    if (viewerRole === "admin" && role.kind === "system" && role.ref === "admin") return true;
     return false;
   };
 
-  const toggleCell = (role: RoleColumn, permId: string) => {
+  const toggleCell = (role: RoleColumn, permKey: string) => {
     if (isCellDisabled(role)) return;
-    setGrants((prev) => {
-      const next = { ...prev };
-      const set = new Set(next[role.key]);
-      if (set.has(permId)) set.delete(permId);
-      else set.add(permId);
-      next[role.key] = set;
+    setDraft((prev) => {
+      const next = new Set(prev);
+      const k = grantKey(role.kind, role.ref, permKey);
+      if (next.has(k)) next.delete(k);
+      else next.add(k);
       return next;
     });
   };
 
-  const permissionsByCategory = DEMO_PERMISSIONS.reduce<Record<string, Permission[]>>((acc, p) => {
-    (acc[p.category] = acc[p.category] || []).push(p);
-    return acc;
-  }, {});
+  const handleSave = async () => {
+    if (!isDirty) return;
+    setSaving(true);
+    try {
+      const toAdd: { role_kind: RoleKind; role_ref: string; permission_key: string }[] = [];
+      const toRemove: { role_kind: RoleKind; role_ref: string; permission_key: string }[] = [];
 
-  const filteredCategories = Object.entries(permissionsByCategory).reduce<Record<string, Permission[]>>((acc, [cat, perms]) => {
-    const filtered = perms.filter((p) => {
-      const matchesSearch =
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        cat.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesFilter =
-        filterType === "all" ||
-        (filterType === "core" && !p.feature_key) ||
-        (filterType === "premium" && !!p.feature_key);
-      return matchesSearch && matchesFilter;
-    });
-    if (filtered.length > 0) acc[cat] = filtered;
-    return acc;
-  }, {});
+      for (const k of draft) if (!originalDraft.has(k)) {
+        const [kind, ref, permKey] = k.split("::");
+        toAdd.push({ role_kind: kind as RoleKind, role_ref: ref, permission_key: permKey });
+      }
+      for (const k of originalDraft) if (!draft.has(k)) {
+        const [kind, ref, permKey] = k.split("::");
+        toRemove.push({ role_kind: kind as RoleKind, role_ref: ref, permission_key: permKey });
+      }
 
-  const coreCount = DEMO_PERMISSIONS.filter((p) => !p.feature_key).length;
-  const premiumCount = DEMO_PERMISSIONS.filter((p) => !!p.feature_key).length;
+      if (toAdd.length > 0) {
+        const { error: insErr } = await supabase.from("role_permissions").insert(toAdd);
+        if (insErr) throw insErr;
+      }
+      for (const r of toRemove) {
+        const { error: delErr } = await supabase
+          .from("role_permissions")
+          .delete()
+          .eq("role_kind", r.role_kind)
+          .eq("role_ref", r.role_ref)
+          .eq("permission_key", r.permission_key);
+        if (delErr) throw delErr;
+      }
+
+      toast.success(`Saved ${toAdd.length + toRemove.length} change${toAdd.length + toRemove.length === 1 ? "" : "s"}`);
+      await refresh();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to save";
+      toast.error(msg);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleReset = () => {
+    setDraft(new Set(originalDraft));
+    toast.info("Changes discarded");
+  };
+
+  const permissionsByCategory = useMemo(() => {
+    return permissions.reduce<Record<string, typeof permissions>>((acc, p) => {
+      (acc[p.category] = acc[p.category] || []).push(p);
+      return acc;
+    }, {});
+  }, [permissions]);
+
+  const filteredCategories = useMemo(() => {
+    return Object.entries(permissionsByCategory).reduce<Record<string, typeof permissions>>((acc, [cat, perms]) => {
+      const filtered = perms.filter((p) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          p.key.toLowerCase().includes(q) ||
+          p.label.toLowerCase().includes(q) ||
+          (p.description ?? "").toLowerCase().includes(q) ||
+          cat.toLowerCase().includes(q)
+        );
+      });
+      if (filtered.length > 0) acc[cat] = filtered;
+      return acc;
+    }, {});
+  }, [permissionsByCategory, searchQuery]);
 
   const colSpan = 2 + visibleRoles.length;
+
+  if (authLoading || loading) {
+    return (
+      <AppShell>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (!viewerRole) {
+    return (
+      <AppShell>
+        <Card className="max-w-xl mx-auto mt-10">
+          <CardContent className="py-8 text-center space-y-2">
+            <AlertCircle className="h-8 w-8 text-amber-500 mx-auto" />
+            <h2 className="text-lg font-semibold">Platform role required</h2>
+            <p className="text-sm text-muted-foreground">
+              You need a platform-tier role (super_admin or admin) to view the Permission Matrix.
+            </p>
+          </CardContent>
+        </Card>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell>
@@ -178,88 +228,54 @@ export default function PermissionMatrix() {
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="gap-1">
                 <Shield className="h-3 w-3" />
-                {coreCount} Core
+                {permissions.length} permissions
               </Badge>
-              <Badge variant="outline" className="gap-1 border-amber-300 text-amber-700">
-                <Zap className="h-3 w-3" />
-                {premiumCount} Premium
-              </Badge>
+              <Button variant="outline" size="sm" onClick={handleReset} disabled={!isDirty || saving}>
+                <RotateCcw className="h-3 w-3 mr-1" />
+                Reset
+              </Button>
+              <Button size="sm" onClick={handleSave} disabled={!isDirty || saving}>
+                {saving ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Save className="h-3 w-3 mr-1" />}
+                Save Changes
+              </Button>
             </div>
           </div>
 
-          {/* Viewer toggle (demo only) */}
-          <Card className="bg-muted/30 border-dashed">
-            <CardContent className="py-3">
-              <div className="flex items-center gap-3 text-sm flex-wrap">
-                <div className="flex items-center gap-2">
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">Preview as</span>
-                </div>
-                <Select value={viewerRole} onValueChange={(v) => setViewerRole(v as "super_admin" | "admin")}>
-                  <SelectTrigger className="h-8 w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="super_admin">Super Admin</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-                <span className="text-xs text-muted-foreground">
-                  {viewerRole === "super_admin"
-                    ? "You see all role columns. Your own column is locked."
-                    : "Super Admin column is hidden. Your own (Admin) column is read-only."}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+          {error && (
+            <Card className="border-destructive/40 bg-destructive/5">
+              <CardContent className="py-3 text-sm text-destructive flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" />
+                {error}
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Cascade explanation */}
+          {/* Viewer info */}
           <Card className="bg-muted/30 border-dashed">
-            <CardContent className="py-4">
-              <div className="flex items-center gap-3 text-sm flex-wrap">
-                <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <span className="text-xs font-bold text-primary">1</span>
-                  </div>
-                  <div>
-                    <p className="font-medium">Platform Ceiling</p>
-                    <p className="text-muted-foreground text-xs">Super Admin sets the max</p>
-                  </div>
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <span className="text-xs font-bold text-primary">2</span>
-                  </div>
-                  <div>
-                    <p className="font-medium">Role Delegation</p>
-                    <p className="text-muted-foreground text-xs">Grant per platform role</p>
-                  </div>
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <span className="text-xs font-bold text-primary">3</span>
-                  </div>
-                  <div>
-                    <p className="font-medium">Plan Gating</p>
-                    <p className="text-muted-foreground text-xs">Subscription restricts at runtime</p>
-                  </div>
-                </div>
-              </div>
+            <CardContent className="py-3 text-sm flex items-center gap-3 flex-wrap">
+              <Badge className={viewerRole === "super_admin" ? "bg-red-100 text-red-800" : "bg-blue-100 text-blue-800"}>
+                Logged in as {viewerRole === "super_admin" ? "Super Admin" : "Admin"}
+              </Badge>
+              <span className="text-xs text-muted-foreground">
+                {viewerRole === "super_admin"
+                  ? "You see all role columns. Your own column is locked to prevent privilege drift."
+                  : "Super Admin column is hidden. Your own (Admin) column is read-only."}
+              </span>
             </CardContent>
           </Card>
 
           {/* Stats per visible role */}
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {visibleRoles.map((r) => {
-              const count = r.alwaysFull ? DEMO_PERMISSIONS.length : (grants[r.key]?.size ?? 0);
+              const count = r.alwaysFull
+                ? permissions.length
+                : Array.from(draft).filter((k) => k.startsWith(`${r.kind}::${r.ref}::`)).length;
               return (
-                <Card key={r.key} className="text-center">
+                <Card key={`${r.kind}-${r.ref}`} className="text-center">
                   <CardContent className="pt-4 pb-3">
                     <div className="flex items-center justify-center gap-1 mb-2">
                       <Badge className={r.color} variant="secondary">{r.label}</Badge>
-                      {(r.fixed) && <Lock className="h-3 w-3 text-muted-foreground" />}
+                      {r.fixed && <Lock className="h-3 w-3 text-muted-foreground" />}
                     </div>
                     <p className="text-2xl font-bold">{count}</p>
                     <p className="text-[11px] text-muted-foreground line-clamp-2 min-h-[2.25rem]">{r.description}</p>
@@ -285,23 +301,6 @@ export default function PermissionMatrix() {
                   className="pl-9"
                 />
               </div>
-              <div className="flex gap-1">
-                <Button variant={filterType === "all" ? "default" : "outline"} size="sm" onClick={() => setFilterType("all")}>
-                  All
-                </Button>
-                <Button variant={filterType === "core" ? "default" : "outline"} size="sm" onClick={() => setFilterType("core")}>
-                  Core
-                </Button>
-                <Button
-                  variant={filterType === "premium" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFilterType("premium")}
-                  className={filterType === "premium" ? "" : "border-amber-300 text-amber-700 hover:bg-amber-50"}
-                >
-                  <Zap className="h-3 w-3 mr-1" />
-                  Premium
-                </Button>
-              </div>
             </div>
 
             <TabsContent value="matrix" className="mt-4">
@@ -311,18 +310,18 @@ export default function PermissionMatrix() {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b bg-muted/50">
-                          <th className="text-left p-3 font-medium min-w-[250px]">Permission</th>
-                          <th className="text-center p-3 font-medium min-w-[80px]">Gate</th>
+                          <th className="text-left p-3 font-medium min-w-[280px]">Permission</th>
+                          <th className="text-center p-3 font-medium min-w-[80px]">Type</th>
                           {visibleRoles.map((r) => (
-                            <th key={r.key} className="text-center p-3 font-medium min-w-[130px]">
+                            <th key={`${r.kind}-${r.ref}`} className="text-center p-3 font-medium min-w-[130px]">
                               <div className="flex items-center justify-center gap-1">
                                 <Badge className={r.color} variant="secondary">{r.label}</Badge>
                                 {r.fixed && <Lock className="h-3 w-3 text-muted-foreground" />}
                               </div>
-                              {r.key === viewerRole && (
+                              {r.kind === "system" && r.ref === viewerRole && (
                                 <p className="text-[10px] text-muted-foreground mt-1">your role · read-only</p>
                               )}
-                              {r.key === "tenant" && (
+                              {r.kind === "system" && r.ref === "tenant" && (
                                 <p className="text-[10px] text-muted-foreground mt-1">tenant tier</p>
                               )}
                             </th>
@@ -332,16 +331,16 @@ export default function PermissionMatrix() {
                       <tbody>
                         {Object.entries(filteredCategories).map(([category, perms]) => (
                           <>
-                            <tr key={category} className="bg-muted/30">
+                            <tr key={`cat-${category}`} className="bg-muted/30">
                               <td colSpan={colSpan} className="p-2 px-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground">
                                 {category}
                               </td>
                             </tr>
                             {perms.map((perm) => (
-                              <tr key={perm.id} className="border-b hover:bg-muted/20">
+                              <tr key={perm.key} className="border-b hover:bg-muted/20">
                                 <td className="p-3">
                                   <div className="flex items-center gap-2">
-                                    <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">{perm.name}</span>
+                                    <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">{perm.key}</span>
                                     {perm.description && (
                                       <Tooltip>
                                         <TooltipTrigger>
@@ -351,31 +350,22 @@ export default function PermissionMatrix() {
                                       </Tooltip>
                                     )}
                                   </div>
+                                  <p className="text-[11px] text-muted-foreground mt-0.5">{perm.label}</p>
                                 </td>
                                 <td className="text-center p-3">
-                                  {perm.feature_key ? (
-                                    <Tooltip>
-                                      <TooltipTrigger>
-                                        <Badge variant="outline" className="text-xs border-amber-300 text-amber-700 gap-1">
-                                          <Zap className="h-2.5 w-2.5" />
-                                          {FEATURE_LABELS[perm.feature_key] || perm.feature_key}
-                                        </Badge>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        Requires "{FEATURE_LABELS[perm.feature_key] || perm.feature_key}" feature in subscription plan
-                                      </TooltipContent>
-                                    </Tooltip>
+                                  {perm.is_destructive ? (
+                                    <Badge variant="outline" className="text-[10px] border-destructive/40 text-destructive">Destructive</Badge>
                                   ) : (
-                                    <Badge variant="secondary" className="text-xs">Core</Badge>
+                                    <Badge variant="secondary" className="text-[10px]">Standard</Badge>
                                   )}
                                 </td>
                                 {visibleRoles.map((r) => {
                                   const disabled = isCellDisabled(r);
                                   return (
-                                    <td key={r.key} className="text-center p-3">
+                                    <td key={`${r.kind}-${r.ref}`} className="text-center p-3">
                                       <Checkbox
-                                        checked={isCellChecked(r, perm.id)}
-                                        onCheckedChange={() => toggleCell(r, perm.id)}
+                                        checked={isCellChecked(r, perm.key)}
+                                        onCheckedChange={() => toggleCell(r, perm.key)}
                                         disabled={disabled}
                                         className={disabled ? "opacity-60 cursor-not-allowed" : ""}
                                       />
@@ -397,29 +387,22 @@ export default function PermissionMatrix() {
               <div className="grid gap-4 md:grid-cols-2">
                 {visibleRoles.map((r) => {
                   const rolePerms = r.alwaysFull
-                    ? DEMO_PERMISSIONS
-                    : DEMO_PERMISSIONS.filter((p) => isCellChecked(r, p.id));
-                  const premiumRolePerms = rolePerms.filter((p) => p.feature_key);
+                    ? permissions
+                    : permissions.filter((p) => isCellChecked(r, p.key));
                   return (
-                    <Card key={r.key}>
+                    <Card key={`br-${r.kind}-${r.ref}`}>
                       <CardHeader className="pb-3">
                         <CardTitle className="flex items-center gap-2 flex-wrap">
                           <Badge className={r.color}>{r.label}</Badge>
                           {r.fixed && <Lock className="h-3 w-3 text-muted-foreground" />}
                           <span className="text-sm font-normal text-muted-foreground">{rolePerms.length} permissions</span>
-                          {premiumRolePerms.length > 0 && (
-                            <Badge variant="outline" className="text-xs border-amber-300 text-amber-700">
-                              <Zap className="h-2.5 w-2.5 mr-0.5" />
-                              {premiumRolePerms.length} premium
-                            </Badge>
-                          )}
                         </CardTitle>
                         <CardDescription>{r.description}</CardDescription>
                       </CardHeader>
                       <CardContent>
                         <Accordion type="multiple" className="w-full">
                           {Object.entries(permissionsByCategory).map(([cat, catPerms]) => {
-                            const activePerms = catPerms.filter((p) => isCellChecked(r, p.id));
+                            const activePerms = catPerms.filter((p) => isCellChecked(r, p.key));
                             if (activePerms.length === 0 && !r.alwaysFull) return null;
                             return (
                               <AccordionItem key={cat} value={cat}>
@@ -429,22 +412,19 @@ export default function PermissionMatrix() {
                                 <AccordionContent>
                                   <div className="space-y-1">
                                     {catPerms.map((p) => {
-                                      const checked = isCellChecked(r, p.id);
+                                      const checked = isCellChecked(r, p.key);
                                       const disabled = isCellDisabled(r);
                                       return (
-                                        <div key={p.id} className="flex items-center gap-2 py-1">
+                                        <div key={p.key} className="flex items-center gap-2 py-1">
                                           <Checkbox
                                             checked={checked}
-                                            onCheckedChange={() => toggleCell(r, p.id)}
+                                            onCheckedChange={() => toggleCell(r, p.key)}
                                             disabled={disabled}
                                             className={disabled ? "opacity-60" : ""}
                                           />
-                                          <span className="text-sm flex-1">{p.description || p.name}</span>
-                                          {p.feature_key && (
-                                            <Badge variant="outline" className="text-[10px] border-amber-300 text-amber-700">
-                                              <Zap className="h-2 w-2 mr-0.5" />
-                                              {FEATURE_LABELS[p.feature_key] || p.feature_key}
-                                            </Badge>
+                                          <span className="text-sm flex-1">{p.label}</span>
+                                          {p.is_destructive && (
+                                            <Badge variant="outline" className="text-[10px] border-destructive/40 text-destructive">!</Badge>
                                           )}
                                         </div>
                                       );
