@@ -67,6 +67,54 @@ export type Database = {
           },
         ]
       }
+      notification_templates: {
+        Row: {
+          body_html: string
+          body_text: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          scope: string
+          subject: string
+          trigger_type: string
+          updated_at: string
+          variables: Json
+        }
+        Insert: {
+          body_html: string
+          body_text?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          scope?: string
+          subject: string
+          trigger_type: string
+          updated_at?: string
+          variables?: Json
+        }
+        Update: {
+          body_html?: string
+          body_text?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          scope?: string
+          subject?: string
+          trigger_type?: string
+          updated_at?: string
+          variables?: Json
+        }
+        Relationships: []
+      }
       permissions: {
         Row: {
           category: string
@@ -172,6 +220,99 @@ export type Database = {
           is_archived?: boolean
           name?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      platform_invitations: {
+        Row: {
+          accepted_at: string | null
+          country_code: string | null
+          created_at: string
+          email: string
+          email_error: string | null
+          email_status: string
+          expires_at: string
+          first_name: string | null
+          id: string
+          invited_by: string | null
+          last_name: string | null
+          phone: string | null
+          role_kind: Database["public"]["Enums"]["role_kind"]
+          role_ref: string
+          sent_at: string | null
+          status: string
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          country_code?: string | null
+          created_at?: string
+          email: string
+          email_error?: string | null
+          email_status?: string
+          expires_at: string
+          first_name?: string | null
+          id?: string
+          invited_by?: string | null
+          last_name?: string | null
+          phone?: string | null
+          role_kind: Database["public"]["Enums"]["role_kind"]
+          role_ref: string
+          sent_at?: string | null
+          status?: string
+          token: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          country_code?: string | null
+          created_at?: string
+          email?: string
+          email_error?: string | null
+          email_status?: string
+          expires_at?: string
+          first_name?: string | null
+          id?: string
+          invited_by?: string | null
+          last_name?: string | null
+          phone?: string | null
+          role_kind?: Database["public"]["Enums"]["role_kind"]
+          role_ref?: string
+          sent_at?: string | null
+          status?: string
+          token?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      platform_settings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
         }
         Relationships: []
       }
