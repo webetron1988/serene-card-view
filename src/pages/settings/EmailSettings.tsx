@@ -58,23 +58,45 @@ export default function EmailSettings() {
     if (!testEmail) { toast.error("Enter an email address to receive the test"); return; }
     if (!smtp.host || !smtp.user || !smtp.password) { toast.error("Fill SMTP host, user and password first"); return; }
     setTestStatus("testing");
-    // Save current config first so the edge function reads it from DB
-    const { error: saveErr } = await save(smtp);
-    if (saveErr) { setTestStatus("error"); toast.error(saveErr.message); return; }
-    const { data, error } = await supabase.functions.invoke("test-platform-smtp", {
-      body: { recipient_email: testEmail, smtp_config: smtp, save: true },
-    });
-    const payload = (data as any) || {};
-    if (error || payload.error) {
-      setTestStatus("error");
-      toast.error(payload.error || error?.message || "SMTP test failed");
+    try {
+      // Save current config first so the edge function reads it from DB
+      const { error: saveErr } = await save(smtp);
+      if (saveErr) { setTestStatus("error"); toast.error(saveErr.message); setTimeout(() => setTestStatus("idle"), 4000); return; }
+
+      let payload: any = {};
+      let invokeError: any = null;
+      try {
+        const res = await supabase.functions.invoke("test-platform-smtp", {
+          body: { recipient_email: testEmail, smtp_config: smtp, save: true },
+        });
+        payload = (res.data as any) || {};
+        invokeError = res.error;
+        // FunctionsHttpError exposes .context.response — try to read JSON body
+        if (invokeError && (invokeError as any).context?.response) {
+          try {
+            const body = await (invokeError as any).context.response.clone().json();
+            if (body?.error) payload.error = body.error;
+          } catch { /* ignore */ }
+        }
+      } catch (e: any) {
+        invokeError = e;
+      }
+
+      if (payload?.error || invokeError) {
+        setTestStatus("error");
+        toast.error(payload?.error || invokeError?.message || "SMTP test failed");
+        setTimeout(() => setTestStatus("idle"), 4000);
+        return;
+      }
+      setTestStatus("success");
+      toast.success("Test email sent. SMTP verified.");
+      await reload();
       setTimeout(() => setTestStatus("idle"), 4000);
-      return;
+    } catch (e: any) {
+      setTestStatus("error");
+      toast.error(e?.message || "SMTP test failed");
+      setTimeout(() => setTestStatus("idle"), 4000);
     }
-    setTestStatus("success");
-    toast.success("Test email sent. SMTP verified.");
-    await reload();
-    setTimeout(() => setTestStatus("idle"), 4000);
   };
 
   const verified = !!smtp.verified_at;
