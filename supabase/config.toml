@@ -1,1 +1,13 @@
 project_id = "hsvrophhehmzkodmrgys"
+
+[functions.test-platform-smtp]
+verify_jwt = false
+
+[functions.send-platform-invitation]
+verify_jwt = false
+
+[functions.send-platform-password-reset]
+verify_jwt = false
+
+[functions.accept-platform-invitation]
+verify_jwt = false
