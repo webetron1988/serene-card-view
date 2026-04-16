@@ -37,6 +37,8 @@ import EmailSettings from "@/pages/settings/EmailSettings";
 import NotificationSettings from "@/pages/settings/NotificationSettings";
 import IntegrationSettings from "@/pages/settings/IntegrationSettings";
 import ChannelSettingsPage from "@/pages/settings/ChannelSettingsPage";
+import PolicyGovernancePage from "@/pages/settings/PolicyGovernancePage";
+import DocumentVaultPage from "@/pages/settings/DocumentVaultPage";
 
 // Tenant
 import TenantLogin from "@/pages/tenant/TenantLogin";
@@ -91,6 +93,8 @@ export default function App() {
             <Route path="notifications" element={<NotificationSettings />} />
             <Route path="integrations" element={<IntegrationSettings />} />
             <Route path="channels" element={<ChannelSettingsPage />} />
+            <Route path="policy" element={<PolicyGovernancePage />} />
+            <Route path="document-vault" element={<DocumentVaultPage />} />
           </Route>
 
           {/* ─── Tenant Routes (/tenant/*) ─── */}
