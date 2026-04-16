@@ -13,14 +13,15 @@ Updated: just now
 - Routes: `/app/admin/*` for platform admin, `/tenant/login` (generic) + `/tenant/:code/*` for tenants. NO `TenantPicker` page.
 - Tenancy: ONE user per tenant (DB-enforced). Tenant = license holder. Organizations live under a tenant (not yet built).
 - Auth: Invite-only — no public signup. Admin login at `/app/admin/login`.
-- User Tiers: `profiles.user_tier` ('platform' | 'tenant') is hard-enforced by DB triggers — platform admins and tenant users cannot cross tables. Login pages also tier-check after sign-in.
+- Roles: Fixed = super_admin (uneditable), admin (super-admin-edits-only), tenant (placeholder). Self-edit lock always on.
 
 ## Memories
 - [Platform Architecture Overview](mem://architecture/platform-overview) — 3-layer hierarchy, 11 build phases, current build status
 - [Route Architecture](mem://architecture/routes) — /app/admin/* and /tenant/* namespaces, full route map, custom-domain plan
-- [3-Tier User Model](mem://architecture/user-tiers) — Platform / Tenant / Organization roles + scope matrix + future org schema
-- [User Tier Separation](mem://architecture/user-tier-separation) — profiles.user_tier enum + triggers + login guards keep platform/tenant accounts apart
 - [RBAC & Security](mem://architecture/rbac) — 8-layer permission chain, PII masking, role definitions, multi-role merge
+- [Role Model & Edit Rules](mem://architecture/role-model) — Fixed roles, self-edit lock, viewer scope, custom-role gating
+- [3-Tier User Model](mem://architecture/user-tiers) — Platform/Tenant/Org tiers, role taxonomy, scope columns
+- [User Tier Separation](mem://architecture/user-tier-separation) — Hard DB separation between platform and tenant users
 - [AI & Agentic Layer](mem://architecture/ai-agents) — AI Model CMS, 8 agents, conversational readiness, plan-gated keys
 - [Aesthetic & Styling](mem://design/aesthetic) — Core design philosophy, fonts, and visual elements
 - [Layout Architecture](mem://design/layout) — AppShell constraints and page padding rules

@@ -12,12 +12,32 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Separator } from "@/components/ui/separator";
 import { Plus, Shield, ShieldCheck, Lock, Pencil, Archive, Trash2, ExternalLink, Users, Sparkles } from "lucide-react";
 
-// ─────────── Static demo data (UI only) ───────────
+// ─────────── Static demo data (UI only) — see mem://architecture/role-model ───────────
 const PLATFORM_DEFAULT_ROLES = [
-  { role: "super_admin", label: "Super Admin", description: "Full platform control. Manages tenants, plans, billing, security.", permCount: 20 },
-  { role: "platform_admin", label: "Platform Admin", description: "Day-to-day platform operations. Cannot manage billing or super admins.", permCount: 16 },
-  { role: "support_agent", label: "Support Agent", description: "Read-only access to tenants for troubleshooting and customer support.", permCount: 8 },
-  { role: "auditor", label: "Auditor", description: "Read-only access to audit logs, security events, and compliance reports.", permCount: 5 },
+  {
+    role: "super_admin",
+    label: "Super Admin",
+    description: "Full platform access. All permissions are granted and uneditable.",
+    permCount: 22,
+    note: "Uneditable — system-protected",
+    tier: "platform" as const,
+  },
+  {
+    role: "admin",
+    label: "Admin",
+    description: "Day-to-day platform operations. Permissions controlled by Super Admin only.",
+    permCount: 15,
+    note: "Editable by Super Admin",
+    tier: "platform" as const,
+  },
+  {
+    role: "tenant",
+    label: "Tenant",
+    description: "Reserved role for tenant-tier users. Managed in the tenant workspace (coming soon).",
+    permCount: 10,
+    note: "Tenant tier — placeholder",
+    tier: "tenant" as const,
+  },
 ];
 
 type CustomRole = {
@@ -120,14 +140,20 @@ export default function RolesAccess() {
           <p className="text-sm text-muted-foreground">
             These roles are built-in and cannot be modified or removed. Permissions are managed in the Permission Matrix.
           </p>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {PLATFORM_DEFAULT_ROLES.map((role) => (
-              <Card key={role.role} className="relative">
+              <Card key={role.role} className={`relative ${role.tier === "tenant" ? "border-dashed opacity-80" : ""}`}>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <Lock className="h-3.5 w-3.5 text-muted-foreground" />
                       <CardTitle className="text-sm font-semibold">{role.label}</CardTitle>
+                      {role.role === "super_admin" && (
+                        <Badge variant="secondary" className="text-[10px]">Uneditable</Badge>
+                      )}
+                      {role.tier === "tenant" && (
+                        <Badge variant="outline" className="text-[10px]">Tenant tier</Badge>
+                      )}
                     </div>
                     <Switch checked={true} disabled className="opacity-60" />
                   </div>
@@ -135,13 +161,18 @@ export default function RolesAccess() {
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="flex items-center justify-between">
-                    <Badge variant="outline" className="text-xs">
-                      {role.permCount} permissions
-                    </Badge>
-                    <Button variant="ghost" size="sm" className="text-xs h-7 px-2 text-primary" onClick={goToMatrix}>
-                      <ExternalLink className="h-3 w-3 mr-1" />
-                      Matrix
-                    </Button>
+                    <div className="flex flex-col gap-1">
+                      <Badge variant="outline" className="text-xs w-fit">
+                        {role.permCount} permissions
+                      </Badge>
+                      <span className="text-[10px] text-muted-foreground">{role.note}</span>
+                    </div>
+                    {role.tier === "platform" && (
+                      <Button variant="ghost" size="sm" className="text-xs h-7 px-2 text-primary" onClick={goToMatrix}>
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Matrix
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
