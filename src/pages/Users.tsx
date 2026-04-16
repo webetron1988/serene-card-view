@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Users, UserPlus, Search, Mail, Shield, Loader2, MoreHorizontal,
+  Users, UserPlus, Search, Mail, Shield, Loader2,
   CheckCircle2, XCircle, Clock, RefreshCw, Trash2, Copy
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";

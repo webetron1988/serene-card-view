@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Save, Globe, Building2, ExternalLink, Info, Loader2, Link2 } from "lucide-react";
+import { Save, Building2, ExternalLink, Info, Loader2, Link2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
