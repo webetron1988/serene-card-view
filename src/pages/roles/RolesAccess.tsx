@@ -140,14 +140,20 @@ export default function RolesAccess() {
           <p className="text-sm text-muted-foreground">
             These roles are built-in and cannot be modified or removed. Permissions are managed in the Permission Matrix.
           </p>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {PLATFORM_DEFAULT_ROLES.map((role) => (
-              <Card key={role.role} className="relative">
+              <Card key={role.role} className={`relative ${role.tier === "tenant" ? "border-dashed opacity-80" : ""}`}>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <Lock className="h-3.5 w-3.5 text-muted-foreground" />
                       <CardTitle className="text-sm font-semibold">{role.label}</CardTitle>
+                      {role.role === "super_admin" && (
+                        <Badge variant="secondary" className="text-[10px]">Uneditable</Badge>
+                      )}
+                      {role.tier === "tenant" && (
+                        <Badge variant="outline" className="text-[10px]">Tenant tier</Badge>
+                      )}
                     </div>
                     <Switch checked={true} disabled className="opacity-60" />
                   </div>
@@ -155,13 +161,18 @@ export default function RolesAccess() {
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="flex items-center justify-between">
-                    <Badge variant="outline" className="text-xs">
-                      {role.permCount} permissions
-                    </Badge>
-                    <Button variant="ghost" size="sm" className="text-xs h-7 px-2 text-primary" onClick={goToMatrix}>
-                      <ExternalLink className="h-3 w-3 mr-1" />
-                      Matrix
-                    </Button>
+                    <div className="flex flex-col gap-1">
+                      <Badge variant="outline" className="text-xs w-fit">
+                        {role.permCount} permissions
+                      </Badge>
+                      <span className="text-[10px] text-muted-foreground">{role.note}</span>
+                    </div>
+                    {role.tier === "platform" && (
+                      <Button variant="ghost" size="sm" className="text-xs h-7 px-2 text-primary" onClick={goToMatrix}>
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Matrix
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
