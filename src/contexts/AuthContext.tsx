@@ -10,12 +10,15 @@ interface UserRoleRow {
   tenant_id: string | null;
 }
 
+export type UserTier = Database["public"]["Enums"]["user_tier"];
+
 interface ProfileRow {
   user_id: string;
   email: string;
   display_name: string | null;
   avatar_url: string | null;
   status: Database["public"]["Enums"]["user_status"];
+  user_tier: UserTier;
 }
 
 interface AuthContextValue {
@@ -45,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadUserData = async (userId: string) => {
     // Defer heavy queries to avoid blocking the auth callback
     const [{ data: profileData }, { data: rolesData }] = await Promise.all([
-      supabase.from("profiles").select("user_id, email, display_name, avatar_url, status").eq("user_id", userId).maybeSingle(),
+      supabase.from("profiles").select("user_id, email, display_name, avatar_url, status, user_tier").eq("user_id", userId).maybeSingle(),
       supabase.from("user_roles").select("role, tenant_id").eq("user_id", userId),
     ]);
     setProfile(profileData ?? null);
