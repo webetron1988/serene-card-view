@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 
-import Login from "@/pages/Login";
+import AdminLogin from "@/pages/admin/AdminLogin";
 import Dashboard from "@/pages/Dashboard";
 import MyProfile from "@/pages/MyProfile";
 import Users from "@/pages/Users";
@@ -41,8 +41,10 @@ import PolicyGovernancePage from "@/pages/settings/PolicyGovernancePage";
 import DocumentVaultPage from "@/pages/settings/DocumentVaultPage";
 
 // Tenant
+import TenantPicker from "@/pages/tenant/TenantPicker";
 import TenantLogin from "@/pages/tenant/TenantLogin";
 import TenantDashboard from "@/pages/tenant/TenantDashboard";
+import { TenantShell } from "@/components/layout/TenantShell";
 
 function SettingsPage() {
   return (
@@ -57,9 +59,11 @@ export default function App() {
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <BrowserRouter>
         <Routes>
-          {/* Platform Admin Login */}
-          <Route path="/login" element={<Login />} />
+          {/* Root redirect */}
           <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+
+          {/* ─── Platform Admin Login ─── */}
+          <Route path="/admin/login" element={<AdminLogin />} />
 
           {/* ─── Platform Admin Routes (/admin/*) ─── */}
           <Route path="/admin/dashboard" element={<Dashboard />} />
@@ -98,10 +102,18 @@ export default function App() {
           </Route>
 
           {/* ─── Tenant Routes (/tenant/*) ─── */}
-          <Route path="/tenant/login" element={<TenantLogin />} />
-          <Route path="/tenant/dashboard" element={<TenantDashboard />} />
+          {/* Tenant picker — landing page to choose a tenant in demo mode */}
+          <Route path="/tenant" element={<TenantPicker />} />
+          {/* Tenant-branded login */}
+          <Route path="/tenant/:tenantCode/login" element={<TenantLogin />} />
+          {/* Tenant app shell + nested pages */}
+          <Route path="/tenant/:tenantCode" element={<TenantShell />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<TenantDashboard />} />
+          </Route>
 
-          {/* Legacy redirects — keep old paths working */}
+          {/* ─── Legacy redirects ─── */}
+          <Route path="/login" element={<Navigate to="/admin/login" replace />} />
           <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="/users" element={<Navigate to="/admin/users" replace />} />
           <Route path="/roles" element={<Navigate to="/admin/roles" replace />} />
@@ -115,6 +127,9 @@ export default function App() {
           <Route path="/profile" element={<Navigate to="/admin/profile" replace />} />
           <Route path="/workforce/*" element={<Navigate to="/admin/workforce/employees" replace />} />
           <Route path="/org/*" element={<Navigate to="/admin/org/chart" replace />} />
+          {/* Old single-tenant routes → tenant picker */}
+          <Route path="/tenant/login" element={<Navigate to="/tenant" replace />} />
+          <Route path="/tenant/dashboard" element={<Navigate to="/tenant" replace />} />
 
           <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
         </Routes>
