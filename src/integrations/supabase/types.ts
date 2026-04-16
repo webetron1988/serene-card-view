@@ -67,6 +67,39 @@ export type Database = {
           },
         ]
       }
+      permissions: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          is_destructive: boolean
+          key: string
+          label: string
+          sort_order: number
+          tier_scope: Database["public"]["Enums"]["permission_tier_scope"]
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          is_destructive?: boolean
+          key: string
+          label: string
+          sort_order?: number
+          tier_scope?: Database["public"]["Enums"]["permission_tier_scope"]
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          is_destructive?: boolean
+          key?: string
+          label?: string
+          sort_order?: number
+          tier_scope?: Database["public"]["Enums"]["permission_tier_scope"]
+        }
+        Relationships: []
+      }
       plans: {
         Row: {
           code: string
@@ -108,6 +141,36 @@ export type Database = {
           price_monthly?: number | null
           price_yearly?: number | null
           sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      platform_custom_roles: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_archived: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_archived?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_archived?: boolean
+          name?: string
           updated_at?: string
         }
         Relationships: []
@@ -156,6 +219,85 @@ export type Database = {
           user_tier?: Database["public"]["Enums"]["user_tier"]
         }
         Relationships: []
+      }
+      role_permissions: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          id: string
+          permission_key: string
+          role_kind: Database["public"]["Enums"]["role_kind"]
+          role_ref: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          permission_key: string
+          role_kind: Database["public"]["Enums"]["role_kind"]
+          role_ref: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          permission_key?: string
+          role_kind?: Database["public"]["Enums"]["role_kind"]
+          role_ref?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_permission_key_fkey"
+            columns: ["permission_key"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
+      tenant_custom_roles: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_archived: boolean
+          name: string
+          origin: Database["public"]["Enums"]["tenant_role_origin"]
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_archived?: boolean
+          name: string
+          origin: Database["public"]["Enums"]["tenant_role_origin"]
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_archived?: boolean
+          name?: string
+          origin?: Database["public"]["Enums"]["tenant_role_origin"]
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_custom_roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tenant_members: {
         Row: {
@@ -314,6 +456,9 @@ export type Database = {
         | "hr_admin"
         | "employee"
         | "auditor"
+      permission_tier_scope: "platform" | "tenant" | "both"
+      role_kind: "system" | "platform_custom" | "tenant_custom"
+      tenant_role_origin: "platform_default" | "tenant_custom"
       tenant_status: "trial" | "active" | "suspended" | "archived"
       user_status: "available" | "away" | "busy" | "dnd" | "offline"
       user_tier: "platform" | "tenant"
@@ -452,6 +597,9 @@ export const Constants = {
         "employee",
         "auditor",
       ],
+      permission_tier_scope: ["platform", "tenant", "both"],
+      role_kind: ["system", "platform_custom", "tenant_custom"],
+      tenant_role_origin: ["platform_default", "tenant_custom"],
       tenant_status: ["trial", "active", "suspended", "archived"],
       user_status: ["available", "away", "busy", "dnd", "offline"],
       user_tier: ["platform", "tenant"],
