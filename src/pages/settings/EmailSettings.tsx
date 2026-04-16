@@ -62,7 +62,7 @@ export default function EmailSettings() {
     const { error: saveErr } = await save(smtp);
     if (saveErr) { setTestStatus("error"); toast.error(saveErr.message); return; }
     const { data, error } = await supabase.functions.invoke("test-platform-smtp", {
-      body: { test_email: testEmail },
+      body: { recipient_email: testEmail, smtp_config: smtp, save: true },
     });
     const payload = (data as any) || {};
     if (error || payload.error) {
