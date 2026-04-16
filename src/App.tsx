@@ -1,6 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { RequireAuth } from "@/components/auth/RequireAuth";
+import { RequireTenantAccess } from "@/components/auth/RequireTenantAccess";
 
 import AdminLogin from "@/pages/admin/AdminLogin";
 import Dashboard from "@/pages/Dashboard";
@@ -54,85 +57,93 @@ function SettingsPage() {
   );
 }
 
+/** Wrap an admin page in the auth guard */
+const Admin = (el: React.ReactNode) => <RequireAuth>{el}</RequireAuth>;
+
 export default function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <BrowserRouter>
-        <Routes>
-          {/* Root redirect */}
-          <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+        <AuthProvider>
+          <Routes>
+            {/* Root redirect */}
+            <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
 
-          {/* ─── Platform Admin Login ─── */}
-          <Route path="/admin/login" element={<AdminLogin />} />
+            {/* ─── Platform Admin Login ─── */}
+            <Route path="/admin/login" element={<AdminLogin />} />
 
-          {/* ─── Platform Admin Routes (/admin/*) ─── */}
-          <Route path="/admin/dashboard" element={<Dashboard />} />
-          <Route path="/admin/profile" element={<MyProfile />} />
-          <Route path="/admin/users" element={<Users />} />
-          <Route path="/admin/roles" element={<Roles />} />
-          <Route path="/admin/workforce/employees" element={<EmployeeDirectory />} />
-          <Route path="/admin/org/chart" element={<OrgChart />} />
-          <Route path="/admin/org/units" element={<OrgUnits />} />
-          <Route path="/admin/org/positions" element={<Positions />} />
-          <Route path="/admin/org/locations" element={<Locations />} />
-          <Route path="/admin/marketplace" element={<Marketplace />} />
-          <Route path="/admin/master-data" element={<MasterData />} />
-          <Route path="/admin/tenants" element={<Tenants />} />
-          <Route path="/admin/license" element={<License />} />
-          <Route path="/admin/audit" element={<AuditLog />} />
-          <Route path="/admin/packages" element={<Packages />} />
-          <Route path="/admin/settings" element={<SettingsPage />}>
-            <Route index element={<GeneralSettings />} />
-            <Route path="registration" element={<RegistrationSettings />} />
-            <Route path="roles" element={<RolesPermissionsPage />} />
-            <Route path="departments" element={<DepartmentsPage />} />
-            <Route path="bot-categories" element={<BotCategoriesPage />} />
-            <Route path="branding" element={<BrandingLocalization />} />
-            <Route path="security" element={<SecuritySettingsPage />} />
-            <Route path="payments" element={<PaymentGatewaysPage />} />
-            <Route path="ai-models" element={<AIModelSettingsPage />} />
-            <Route path="guardrails" element={<GuardrailsSettingsPage />} />
-            <Route path="api-keys" element={<ApiKeysWebhooks />} />
-            <Route path="email" element={<EmailSettings />} />
-            <Route path="notifications" element={<NotificationSettings />} />
-            <Route path="integrations" element={<IntegrationSettings />} />
-            <Route path="channels" element={<ChannelSettingsPage />} />
-            <Route path="policy" element={<PolicyGovernancePage />} />
-            <Route path="document-vault" element={<DocumentVaultPage />} />
-          </Route>
+            {/* ─── Platform Admin Routes (auth-guarded) ─── */}
+            <Route path="/admin/dashboard" element={Admin(<Dashboard />)} />
+            <Route path="/admin/profile" element={Admin(<MyProfile />)} />
+            <Route path="/admin/users" element={Admin(<Users />)} />
+            <Route path="/admin/roles" element={Admin(<Roles />)} />
+            <Route path="/admin/workforce/employees" element={Admin(<EmployeeDirectory />)} />
+            <Route path="/admin/org/chart" element={Admin(<OrgChart />)} />
+            <Route path="/admin/org/units" element={Admin(<OrgUnits />)} />
+            <Route path="/admin/org/positions" element={Admin(<Positions />)} />
+            <Route path="/admin/org/locations" element={Admin(<Locations />)} />
+            <Route path="/admin/marketplace" element={Admin(<Marketplace />)} />
+            <Route path="/admin/master-data" element={Admin(<MasterData />)} />
+            <Route path="/admin/tenants" element={Admin(<Tenants />)} />
+            <Route path="/admin/license" element={Admin(<License />)} />
+            <Route path="/admin/audit" element={Admin(<AuditLog />)} />
+            <Route path="/admin/packages" element={Admin(<Packages />)} />
+            <Route path="/admin/settings" element={Admin(<SettingsPage />)}>
+              <Route index element={<GeneralSettings />} />
+              <Route path="registration" element={<RegistrationSettings />} />
+              <Route path="roles" element={<RolesPermissionsPage />} />
+              <Route path="departments" element={<DepartmentsPage />} />
+              <Route path="bot-categories" element={<BotCategoriesPage />} />
+              <Route path="branding" element={<BrandingLocalization />} />
+              <Route path="security" element={<SecuritySettingsPage />} />
+              <Route path="payments" element={<PaymentGatewaysPage />} />
+              <Route path="ai-models" element={<AIModelSettingsPage />} />
+              <Route path="guardrails" element={<GuardrailsSettingsPage />} />
+              <Route path="api-keys" element={<ApiKeysWebhooks />} />
+              <Route path="email" element={<EmailSettings />} />
+              <Route path="notifications" element={<NotificationSettings />} />
+              <Route path="integrations" element={<IntegrationSettings />} />
+              <Route path="channels" element={<ChannelSettingsPage />} />
+              <Route path="policy" element={<PolicyGovernancePage />} />
+              <Route path="document-vault" element={<DocumentVaultPage />} />
+            </Route>
 
-          {/* ─── Tenant Routes (/tenant/*) ─── */}
-          {/* Tenant picker — landing page to choose a tenant in demo mode */}
-          <Route path="/tenant" element={<TenantPicker />} />
-          {/* Tenant-branded login */}
-          <Route path="/tenant/:tenantCode/login" element={<TenantLogin />} />
-          {/* Tenant app shell + nested pages */}
-          <Route path="/tenant/:tenantCode" element={<TenantShell />}>
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<TenantDashboard />} />
-          </Route>
+            {/* ─── Tenant Routes ─── */}
+            <Route path="/tenant" element={<TenantPicker />} />
+            <Route path="/tenant/:tenantCode/login" element={<TenantLogin />} />
+            <Route
+              path="/tenant/:tenantCode"
+              element={
+                <RequireTenantAccess>
+                  <TenantShell />
+                </RequireTenantAccess>
+              }
+            >
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<TenantDashboard />} />
+            </Route>
 
-          {/* ─── Legacy redirects ─── */}
-          <Route path="/login" element={<Navigate to="/admin/login" replace />} />
-          <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="/users" element={<Navigate to="/admin/users" replace />} />
-          <Route path="/roles" element={<Navigate to="/admin/roles" replace />} />
-          <Route path="/packages" element={<Navigate to="/admin/packages" replace />} />
-          <Route path="/tenants" element={<Navigate to="/admin/tenants" replace />} />
-          <Route path="/settings/*" element={<Navigate to="/admin/settings" replace />} />
-          <Route path="/marketplace" element={<Navigate to="/admin/marketplace" replace />} />
-          <Route path="/master-data" element={<Navigate to="/admin/master-data" replace />} />
-          <Route path="/license" element={<Navigate to="/admin/license" replace />} />
-          <Route path="/audit" element={<Navigate to="/admin/audit" replace />} />
-          <Route path="/profile" element={<Navigate to="/admin/profile" replace />} />
-          <Route path="/workforce/*" element={<Navigate to="/admin/workforce/employees" replace />} />
-          <Route path="/org/*" element={<Navigate to="/admin/org/chart" replace />} />
-          {/* Old single-tenant routes → tenant picker */}
-          <Route path="/tenant/login" element={<Navigate to="/tenant" replace />} />
-          <Route path="/tenant/dashboard" element={<Navigate to="/tenant" replace />} />
+            {/* ─── Legacy redirects ─── */}
+            <Route path="/login" element={<Navigate to="/admin/login" replace />} />
+            <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="/users" element={<Navigate to="/admin/users" replace />} />
+            <Route path="/roles" element={<Navigate to="/admin/roles" replace />} />
+            <Route path="/packages" element={<Navigate to="/admin/packages" replace />} />
+            <Route path="/tenants" element={<Navigate to="/admin/tenants" replace />} />
+            <Route path="/settings/*" element={<Navigate to="/admin/settings" replace />} />
+            <Route path="/marketplace" element={<Navigate to="/admin/marketplace" replace />} />
+            <Route path="/master-data" element={<Navigate to="/admin/master-data" replace />} />
+            <Route path="/license" element={<Navigate to="/admin/license" replace />} />
+            <Route path="/audit" element={<Navigate to="/admin/audit" replace />} />
+            <Route path="/profile" element={<Navigate to="/admin/profile" replace />} />
+            <Route path="/workforce/*" element={<Navigate to="/admin/workforce/employees" replace />} />
+            <Route path="/org/*" element={<Navigate to="/admin/org/chart" replace />} />
+            <Route path="/tenant/login" element={<Navigate to="/tenant" replace />} />
+            <Route path="/tenant/dashboard" element={<Navigate to="/tenant" replace />} />
 
-          <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
-        </Routes>
+            <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
       <Toaster richColors position="top-right" />
     </ThemeProvider>
