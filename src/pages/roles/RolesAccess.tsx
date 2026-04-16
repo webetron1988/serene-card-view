@@ -12,12 +12,32 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Separator } from "@/components/ui/separator";
 import { Plus, Shield, ShieldCheck, Lock, Pencil, Archive, Trash2, ExternalLink, Users, Sparkles } from "lucide-react";
 
-// ─────────── Static demo data (UI only) ───────────
+// ─────────── Static demo data (UI only) — see mem://architecture/role-model ───────────
 const PLATFORM_DEFAULT_ROLES = [
-  { role: "super_admin", label: "Super Admin", description: "Full platform control. Manages tenants, plans, billing, security.", permCount: 20 },
-  { role: "platform_admin", label: "Platform Admin", description: "Day-to-day platform operations. Cannot manage billing or super admins.", permCount: 16 },
-  { role: "support_agent", label: "Support Agent", description: "Read-only access to tenants for troubleshooting and customer support.", permCount: 8 },
-  { role: "auditor", label: "Auditor", description: "Read-only access to audit logs, security events, and compliance reports.", permCount: 5 },
+  {
+    role: "super_admin",
+    label: "Super Admin",
+    description: "Full platform access. All permissions are granted and uneditable.",
+    permCount: 22,
+    note: "Uneditable — system-protected",
+    tier: "platform" as const,
+  },
+  {
+    role: "admin",
+    label: "Admin",
+    description: "Day-to-day platform operations. Permissions controlled by Super Admin only.",
+    permCount: 15,
+    note: "Editable by Super Admin",
+    tier: "platform" as const,
+  },
+  {
+    role: "tenant",
+    label: "Tenant",
+    description: "Reserved role for tenant-tier users. Managed in the tenant workspace (coming soon).",
+    permCount: 10,
+    note: "Tenant tier — placeholder",
+    tier: "tenant" as const,
+  },
 ];
 
 type CustomRole = {
