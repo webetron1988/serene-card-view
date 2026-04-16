@@ -36,6 +36,7 @@ interface AuthContextValue {
   refreshUserData: () => Promise<void>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
