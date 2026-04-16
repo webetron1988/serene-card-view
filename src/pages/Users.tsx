@@ -1,196 +1,351 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Users, UserPlus, Search, Filter, MoreHorizontal, Mail,
-  Shield, ChevronDown, Download, Upload, CheckCircle2, XCircle
+  Users, UserPlus, Search, Mail, Shield, Loader2,
+  CheckCircle2, XCircle, Clock, RefreshCw, Trash2, Copy
 } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { StatusBadge } from "@/components/shared/StatusBadge";
 import { StatsCard } from "@/components/shared/StatsCard";
+import { InviteUserModal } from "@/components/users/InviteUserModal";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
-const users = [
-  { id: 1, name: "Sarah Chen", email: "sarah.chen@talenthub.com", role: "HR Director", dept: "Human Resources", status: "active", mfa: true, lastLogin: "2m ago", avatar: "SC", avatarColor: "from-primary to-primary/60" },
-  { id: 2, name: "Mark Johnson", email: "mark.j@talenthub.com", role: "HR Manager", dept: "Talent Acquisition", status: "active", mfa: true, lastLogin: "1h ago", avatar: "MJ", avatarColor: "from-purple-500 to-purple-400" },
-  { id: 3, name: "Priya Patel", email: "priya.p@talenthub.com", role: "Employee", dept: "Engineering", status: "active", mfa: false, lastLogin: "3h ago", avatar: "PP", avatarColor: "from-emerald-500 to-emerald-400" },
-  { id: 4, name: "Tom Williams", email: "tom.w@talenthub.com", role: "Department Head", dept: "Product", status: "active", mfa: true, lastLogin: "1d ago", avatar: "TW", avatarColor: "from-amber-500 to-amber-400" },
-  { id: 5, name: "Lisa Park", email: "lisa.park@talenthub.com", role: "Team Lead", dept: "Marketing", status: "inactive", mfa: false, lastLogin: "7d ago", avatar: "LP", avatarColor: "from-rose-500 to-rose-400" },
-  { id: 6, name: "James Brown", email: "james.b@talenthub.com", role: "Finance Liaison", dept: "Finance", status: "active", mfa: true, lastLogin: "2d ago", avatar: "JB", avatarColor: "from-sky-500 to-sky-400" },
-  { id: 7, name: "Ana Garcia", email: "ana.g@talenthub.com", role: "Auditor", dept: "Compliance", status: "active", mfa: true, lastLogin: "4h ago", avatar: "AG", avatarColor: "from-teal-500 to-teal-400" },
-  { id: 8, name: "David Kim", email: "david.k@talenthub.com", role: "IT Admin", dept: "Technology", status: "active", mfa: true, lastLogin: "30m ago", avatar: "DK", avatarColor: "from-indigo-500 to-indigo-400" },
-];
+interface MemberRow {
+  user_id: string;
+  email: string;
+  display_name: string | null;
+  status: string;
+  created_at: string;
+  roles: { role: string }[];
+}
+
+interface InvitationRow {
+  id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  role_kind: string;
+  role_ref: string;
+  status: string;
+  email_status: string;
+  email_error: string | null;
+  expires_at: string;
+  sent_at: string | null;
+  created_at: string;
+  token: string;
+}
+
+const SYSTEM_LABEL: Record<string, string> = {
+  super_admin: "Super Administrator",
+  admin: "Administrator",
+};
+
+function avatarColor(seed: string) {
+  const palette = [
+    "from-primary to-primary/60",
+    "from-purple-500 to-purple-400",
+    "from-emerald-500 to-emerald-400",
+    "from-amber-500 to-amber-400",
+    "from-rose-500 to-rose-400",
+    "from-sky-500 to-sky-400",
+    "from-teal-500 to-teal-400",
+    "from-indigo-500 to-indigo-400",
+  ];
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
+  return palette[Math.abs(h) % palette.length];
+}
+
+function initials(name: string | null, email: string) {
+  const src = name || email;
+  return src.split(/\s+|@/).filter(Boolean).slice(0, 2).map(s => s[0]?.toUpperCase()).join("") || "?";
+}
 
 export default function UsersPage() {
+  const { hasPlatformRole } = useAuth();
+  const canInvite = hasPlatformRole("super_admin") || hasPlatformRole("admin");
+  const isSuper = hasPlatformRole("super_admin");
+
+  const [tab, setTab] = useState<"members" | "invitations">("members");
   const [search, setSearch] = useState("");
-  const [selectedRows, setSelectedRows] = useState<number[]>([]);
-  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
+  const [members, setMembers] = useState<MemberRow[]>([]);
+  const [invites, setInvites] = useState<InvitationRow[]>([]);
+  const [customRoleNames, setCustomRoleNames] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
 
-  const filtered = users.filter(u =>
-    u.name.toLowerCase().includes(search.toLowerCase()) ||
-    u.email.toLowerCase().includes(search.toLowerCase()) ||
-    u.role.toLowerCase().includes(search.toLowerCase())
-  );
+  const load = useCallback(async () => {
+    setLoading(true);
+    const [{ data: profiles }, { data: invitations }, { data: customRoles }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("user_id, email, display_name, status, created_at")
+        .eq("user_tier", "platform")
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("platform_invitations")
+        .select("*")
+        .order("created_at", { ascending: false }),
+      supabase.from("platform_custom_roles").select("id, name"),
+    ]);
 
-  const toggleRow = (id: number) =>
-    setSelectedRows(prev => prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id]);
+    const userIds = (profiles || []).map(p => p.user_id);
+    const { data: rolesData } = userIds.length
+      ? await supabase.from("user_roles").select("user_id, role").in("user_id", userIds).is("tenant_id", null)
+      : { data: [] as any[] };
+
+    const rolesByUser: Record<string, { role: string }[]> = {};
+    (rolesData || []).forEach((r: any) => {
+      (rolesByUser[r.user_id] ||= []).push({ role: r.role });
+    });
+
+    setMembers((profiles || []).map(p => ({ ...p, roles: rolesByUser[p.user_id] || [] })) as MemberRow[]);
+    setInvites((invitations || []) as InvitationRow[]);
+    const map: Record<string, string> = {};
+    (customRoles || []).forEach((r: any) => { map[r.id] = r.name; });
+    setCustomRoleNames(map);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const filteredMembers = useMemo(() =>
+    members.filter(u =>
+      [u.display_name || "", u.email].some(s => s.toLowerCase().includes(search.toLowerCase()))
+    ), [members, search]);
+
+  const filteredInvites = useMemo(() =>
+    invites.filter(i =>
+      [i.email, i.first_name || "", i.last_name || ""].some(s => s.toLowerCase().includes(search.toLowerCase()))
+    ), [invites, search]);
+
+  const stats = useMemo(() => {
+    const active = members.filter(m => m.status !== "offline").length;
+    const pending = invites.filter(i => i.status === "pending").length;
+    return { total: members.length, active, inactive: members.length - active, pending };
+  }, [members, invites]);
+
+  const roleLabel = (kind: string, ref: string) =>
+    kind === "system" ? (SYSTEM_LABEL[ref] || ref) : (customRoleNames[ref] || "Custom role");
+
+  const resendInvite = async (inv: InvitationRow) => {
+    toast.loading("Resending invitation...", { id: inv.id });
+    const { data, error } = await supabase.functions.invoke("send-platform-invitation", {
+      body: {
+        email: inv.email,
+        first_name: inv.first_name,
+        last_name: inv.last_name,
+        role_kind: inv.role_kind,
+        role_ref: inv.role_ref,
+      },
+    });
+    toast.dismiss(inv.id);
+    const payload = (data as any) || {};
+    if (error || payload.error) toast.error(payload.error || error?.message || "Failed to resend");
+    else { toast.success("Invitation resent"); load(); }
+  };
+
+  const revokeInvite = async (inv: InvitationRow) => {
+    const { error } = await supabase
+      .from("platform_invitations")
+      .update({ status: "revoked" })
+      .eq("id", inv.id);
+    if (error) toast.error(error.message); else { toast.success("Invitation revoked"); load(); }
+  };
+
+  const copyLink = (inv: InvitationRow) => {
+    const link = `${window.location.origin}/admin/accept-invite?token=${encodeURIComponent(inv.token)}`;
+    navigator.clipboard.writeText(link);
+    toast.success("Invitation link copied");
+  };
 
   return (
     <AppShell title="User Management" subtitle="Manage platform users and access">
       <div className="space-y-6">
         <PageHeader
-          title="Users"
-          subtitle="Manage user accounts, roles, and access permissions"
+          title="Platform Users"
+          subtitle="Manage platform-tier user accounts, roles, and invitations"
           icon={Users}
-          actions={[
-            { label: "Export", variant: "secondary", icon: Download, onClick: () => {} },
-            { label: "Invite User", icon: UserPlus, onClick: () => setShowInviteModal(true) },
-          ]}
+          actions={canInvite ? [
+            { label: "Invite User", icon: UserPlus, onClick: () => setShowInvite(true) },
+          ] : []}
         />
 
-        {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatsCard label="Total Users" value="1,284" icon={Users} colorClass="bg-primary/10 text-primary" trend="+8 this week" trendUp />
-          <StatsCard label="Active" value="1,247" icon={CheckCircle2} colorClass="bg-emerald-100 text-emerald-600" />
-          <StatsCard label="Inactive" value="37" icon={XCircle} colorClass="bg-rose-100 text-rose-600" />
-          <StatsCard label="Pending Invite" value="12" icon={Mail} colorClass="bg-amber-100 text-amber-600" />
+          <StatsCard label="Total Users" value={String(stats.total)} icon={Users} colorClass="bg-primary/10 text-primary" />
+          <StatsCard label="Active" value={String(stats.active)} icon={CheckCircle2} colorClass="bg-emerald-100 text-emerald-600" />
+          <StatsCard label="Inactive" value={String(stats.inactive)} icon={XCircle} colorClass="bg-rose-100 text-rose-600" />
+          <StatsCard label="Pending Invites" value={String(stats.pending)} icon={Mail} colorClass="bg-amber-100 text-amber-600" />
         </div>
 
-        {/* Table card */}
         <div className="bg-card border border-border rounded-xl overflow-hidden">
-          {/* Toolbar */}
-          <div className="px-5 py-3.5 border-b border-border flex items-center justify-between gap-3 flex-wrap">
-            <div className="relative flex-1 max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search users..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-secondary/50 border-0 rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-              />
+          <div className="px-5 py-3 border-b border-border flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-1">
+              <button
+                onClick={() => setTab("members")}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${tab === "members" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                Members ({stats.total})
+              </button>
+              <button
+                onClick={() => setTab("invitations")}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${tab === "invitations" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                Invitations ({invites.length})
+              </button>
             </div>
             <div className="flex items-center gap-2">
-              {selectedRows.length > 0 && (
-                <span className="text-xs text-primary font-medium">{selectedRows.length} selected</span>
-              )}
-              <button className="flex items-center gap-1.5 px-3 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
-                <Filter className="w-3.5 h-3.5" />
-                Filter
-                <ChevronDown className="w-3 h-3" />
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder={tab === "members" ? "Search users..." : "Search invitations..."}
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="pl-9 pr-4 py-2 bg-secondary/50 border-0 rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-64"
+                />
+              </div>
+              <button onClick={load} className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors" title="Refresh">
+                <RefreshCw className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="w-10 px-4 py-3 text-left">
-                    <input
-                      type="checkbox"
-                      className="w-4 h-4 rounded border-border"
-                      onChange={e => setSelectedRows(e.target.checked ? users.map(u => u.id) : [])}
-                    />
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">User</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Role</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Department</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">MFA</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Last Active</th>
-                  <th className="w-12 px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filtered.map(user => (
-                  <tr key={user.id} className="hover:bg-secondary/30 transition-colors group">
-                    <td className="px-4 py-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedRows.includes(user.id)}
-                        onChange={() => toggleRow(user.id)}
-                        className="w-4 h-4 rounded border-border"
-                      />
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${user.avatarColor} text-white flex items-center justify-center text-xs font-bold flex-shrink-0`}>
-                          {user.avatar}
-                        </div>
-                        <div>
-                          <p className="font-medium text-foreground">{user.name}</p>
-                          <p className="text-xs text-muted-foreground">{user.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="flex items-center gap-1.5 text-sm text-foreground">
-                        <Shield className="w-3.5 h-3.5 text-muted-foreground" />
-                        {user.role}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{user.dept}</td>
-                    <td className="px-4 py-3"><StatusBadge status={user.status} /></td>
-                    <td className="px-4 py-3">
-                      {user.mfa
-                        ? <span className="flex items-center gap-1 text-xs text-emerald-600"><CheckCircle2 className="w-3.5 h-3.5" />Enabled</span>
-                        : <span className="flex items-center gap-1 text-xs text-muted-foreground"><XCircle className="w-3.5 h-3.5" />Off</span>
-                      }
-                    </td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">{user.lastLogin}</td>
-                    <td className="px-4 py-3">
-                      <button className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-all">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
-                    </td>
+          {loading ? (
+            <div className="p-12 text-center text-muted-foreground"><Loader2 className="w-5 h-5 mx-auto animate-spin" /></div>
+          ) : tab === "members" ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">User</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Roles</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Joined</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          <div className="px-5 py-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-            <span>Showing {filtered.length} of {users.length} users</span>
-            <div className="flex items-center gap-1">
-              <button className="px-3 py-1.5 rounded-lg hover:bg-secondary transition-colors">Previous</button>
-              <button className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground">1</button>
-              <button className="px-3 py-1.5 rounded-lg hover:bg-secondary transition-colors">2</button>
-              <button className="px-3 py-1.5 rounded-lg hover:bg-secondary transition-colors">Next</button>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredMembers.length === 0 ? (
+                    <tr><td colSpan={4} className="px-4 py-12 text-center text-muted-foreground text-sm">No platform users found.</td></tr>
+                  ) : filteredMembers.map(u => (
+                    <tr key={u.user_id} className="hover:bg-secondary/30 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${avatarColor(u.email)} text-white flex items-center justify-center text-xs font-bold flex-shrink-0`}>
+                            {initials(u.display_name, u.email)}
+                          </div>
+                          <div>
+                            <p className="font-medium text-foreground">{u.display_name || u.email.split("@")[0]}</p>
+                            <p className="text-xs text-muted-foreground">{u.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1">
+                          {u.roles.length === 0 ? (
+                            <span className="text-xs text-muted-foreground">No role</span>
+                          ) : u.roles.map((r, i) => (
+                            <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[11px] font-medium">
+                              <Shield className="w-3 h-3" />
+                              {SYSTEM_LABEL[r.role] || r.role}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="inline-flex items-center gap-1 text-xs">
+                          <span className={`w-1.5 h-1.5 rounded-full ${u.status === "available" ? "bg-emerald-500" : "bg-muted-foreground"}`} />
+                          {u.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">
+                        {new Date(u.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Recipient</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Role</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Email</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Expires</th>
+                    <th className="w-10 px-4 py-3"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredInvites.length === 0 ? (
+                    <tr><td colSpan={6} className="px-4 py-12 text-center text-muted-foreground text-sm">No invitations yet. Send one to add a platform user.</td></tr>
+                  ) : filteredInvites.map(inv => {
+                    const expired = new Date(inv.expires_at) < new Date();
+                    const statusColor =
+                      inv.status === "accepted" ? "bg-emerald-100 text-emerald-700" :
+                      inv.status === "revoked" ? "bg-rose-100 text-rose-700" :
+                      expired ? "bg-amber-100 text-amber-700" :
+                      "bg-sky-100 text-sky-700";
+                    const statusLabel = inv.status === "pending" && expired ? "expired" : inv.status;
+                    return (
+                      <tr key={inv.id} className="hover:bg-secondary/30 transition-colors group">
+                        <td className="px-4 py-3">
+                          <div>
+                            <p className="font-medium text-foreground">{inv.first_name} {inv.last_name}</p>
+                            <p className="text-xs text-muted-foreground">{inv.email}</p>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-xs">{roleLabel(inv.role_kind, inv.role_ref)}</td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium ${statusColor}`}>
+                            {statusLabel}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          {inv.email_status === "sent" ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600"><CheckCircle2 className="w-3 h-3" />sent</span>
+                          ) : inv.email_status === "failed" ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] text-rose-600" title={inv.email_error || ""}><XCircle className="w-3 h-3" />failed</span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground"><Clock className="w-3 h-3" />{inv.email_status}</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-muted-foreground">
+                          {new Date(inv.expires_at).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-3">
+                          {inv.status === "pending" && (
+                            <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1">
+                              <button onClick={() => copyLink(inv)} title="Copy link" className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground">
+                                <Copy className="w-3.5 h-3.5" />
+                              </button>
+                              {canInvite && (
+                                <button onClick={() => resendInvite(inv)} title="Resend" className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground">
+                                  <RefreshCw className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                              {isSuper && (
+                                <button onClick={() => revokeInvite(inv)} title="Revoke" className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-rose-600">
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
-        {/* Invite Modal */}
-        {showInviteModal && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl">
-              <h3 className="text-base font-semibold text-foreground mb-1">Invite New User</h3>
-              <p className="text-xs text-muted-foreground mb-5">They'll receive an email invitation to join TalentHub</p>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-medium text-foreground mb-1.5">Email Address</label>
-                  <input type="email" placeholder="colleague@company.com" className="w-full px-3 py-2.5 bg-secondary/50 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-foreground mb-1.5">Role</label>
-                  <select className="w-full px-3 py-2.5 bg-secondary/50 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
-                    <option>HR Director</option>
-                    <option>HR Manager</option>
-                    <option>Department Head</option>
-                    <option>Team Lead</option>
-                    <option>Employee</option>
-                  </select>
-                </div>
-                <div className="flex gap-3 pt-2">
-                  <button onClick={() => setShowInviteModal(false)} className="flex-1 px-4 py-2.5 bg-secondary text-foreground rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors">Cancel</button>
-                  <button className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">Send Invite</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <InviteUserModal open={showInvite} onClose={() => setShowInvite(false)} onSent={load} />
       </div>
     </AppShell>
   );
