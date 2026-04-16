@@ -12,19 +12,19 @@ const navGroups = [
     id: "main",
     label: "",
     items: [
-      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
+      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/app/admin/dashboard" },
     ],
   },
   {
     id: "hr",
     label: "HR Modules",
     items: [
-      { id: "workforce", label: "Workforce", icon: Users, path: "/admin/workforce", children: [
-        { id: "employee-list", label: "Employee Directory", path: "/admin/workforce/employees" },
-        { id: "org-chart", label: "Org Chart", path: "/admin/org/chart" },
-        { id: "org-units", label: "Org Units", path: "/admin/org/units" },
-        { id: "positions", label: "Positions", path: "/admin/org/positions" },
-        { id: "locations", label: "Locations", path: "/admin/org/locations" },
+      { id: "workforce", label: "Workforce", icon: Users, path: "/app/admin/workforce", children: [
+        { id: "employee-list", label: "Employee Directory", path: "/app/admin/workforce/employees" },
+        { id: "org-chart", label: "Org Chart", path: "/app/admin/org/chart" },
+        { id: "org-units", label: "Org Units", path: "/app/admin/org/units" },
+        { id: "positions", label: "Positions", path: "/app/admin/org/positions" },
+        { id: "locations", label: "Locations", path: "/app/admin/org/locations" },
       ]},
     ],
   },
@@ -32,21 +32,21 @@ const navGroups = [
     id: "platform",
     label: "Platform",
     items: [
-      { id: "marketplace", label: "Marketplace", icon: ShoppingBag, path: "/admin/marketplace" },
-      { id: "master-data", label: "Master Data", icon: Database, path: "/admin/master-data" },
+      { id: "marketplace", label: "Marketplace", icon: ShoppingBag, path: "/app/admin/marketplace" },
+      { id: "master-data", label: "Master Data", icon: Database, path: "/app/admin/master-data" },
     ],
   },
   {
     id: "admin",
     label: "Administration",
     items: [
-      { id: "users", label: "Users", icon: Users, path: "/admin/users" },
-      { id: "roles", label: "Roles & Permissions", icon: Shield, path: "/admin/roles" },
-      { id: "packages", label: "Packages", icon: Package, path: "/admin/packages" },
-      { id: "tenants", label: "Tenants", icon: Layers, path: "/admin/tenants" },
-      { id: "license", label: "License", icon: Key, path: "/admin/license" },
-      { id: "audit", label: "Audit Log", icon: FileText, path: "/admin/audit" },
-      { id: "settings", label: "Settings", icon: Settings, path: "/admin/settings" },
+      { id: "users", label: "Users", icon: Users, path: "/app/admin/users" },
+      { id: "roles", label: "Roles & Permissions", icon: Shield, path: "/app/admin/roles" },
+      { id: "packages", label: "Packages", icon: Package, path: "/app/admin/packages" },
+      { id: "tenants", label: "Tenants", icon: Layers, path: "/app/admin/tenants" },
+      { id: "license", label: "License", icon: Key, path: "/app/admin/license" },
+      { id: "audit", label: "Audit Log", icon: FileText, path: "/app/admin/audit" },
+      { id: "settings", label: "Settings", icon: Settings, path: "/app/admin/settings" },
     ],
   },
 ];

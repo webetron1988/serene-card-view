@@ -10,7 +10,7 @@ interface RequireAuthProps {
   requirePlatformRole?: AppRole[];
 }
 
-export function RequireAuth({ children, redirectTo = "/admin/login", requirePlatformRole }: RequireAuthProps) {
+export function RequireAuth({ children, redirectTo = "/app/admin/login", requirePlatformRole }: RequireAuthProps) {
   const { user, loading, hasPlatformRole } = useAuth();
   const location = useLocation();
 

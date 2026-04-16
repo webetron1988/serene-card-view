@@ -48,11 +48,11 @@ export function RequireTenantAccess({ children }: RequireTenantAccessProps) {
   }
 
   if (!user) {
-    return <Navigate to={`/tenant/${tenantCode}/login`} state={{ from: location }} replace />;
+    return <Navigate to="/tenant/login" state={{ from: location }} replace />;
   }
 
   if (!tenantId) {
-    return <Navigate to="/tenant" replace />;
+    return <Navigate to="/tenant/login" replace />;
   }
 
   const allowed = hasPlatformRole("super_admin") || isTenantMember(tenantId);
@@ -62,9 +62,9 @@ export function RequireTenantAccess({ children }: RequireTenantAccessProps) {
         <div className="max-w-md text-center space-y-3">
           <h1 className="text-2xl font-bold text-foreground">No access to this tenant</h1>
           <p className="text-sm text-muted-foreground">
-            Your account is not a member of <span className="font-medium text-foreground">{tenantCode}</span>. Switch tenant or contact your admin.
+            Your account is not a member of <span className="font-medium text-foreground">{tenantCode}</span>. Contact your administrator.
           </p>
-          <a href="/tenant" className="inline-block text-sm text-primary hover:underline">← Back to tenant picker</a>
+          <a href="/tenant/login" className="inline-block text-sm text-primary hover:underline">← Back to sign in</a>
         </div>
       </div>
     );
