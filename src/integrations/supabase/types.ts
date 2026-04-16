@@ -125,6 +125,7 @@ export type Database = {
           timezone: string
           updated_at: string
           user_id: string
+          user_tier: Database["public"]["Enums"]["user_tier"]
         }
         Insert: {
           avatar_url?: string | null
@@ -138,6 +139,7 @@ export type Database = {
           timezone?: string
           updated_at?: string
           user_id: string
+          user_tier?: Database["public"]["Enums"]["user_tier"]
         }
         Update: {
           avatar_url?: string | null
@@ -151,6 +153,7 @@ export type Database = {
           timezone?: string
           updated_at?: string
           user_id?: string
+          user_tier?: Database["public"]["Enums"]["user_tier"]
         }
         Relationships: []
       }
@@ -279,6 +282,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_tier: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["user_tier"]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -309,6 +316,7 @@ export type Database = {
         | "auditor"
       tenant_status: "trial" | "active" | "suspended" | "archived"
       user_status: "available" | "away" | "busy" | "dnd" | "offline"
+      user_tier: "platform" | "tenant"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -446,6 +454,7 @@ export const Constants = {
       ],
       tenant_status: ["trial", "active", "suspended", "archived"],
       user_status: ["available", "away", "busy", "dnd", "offline"],
+      user_tier: ["platform", "tenant"],
     },
   },
 } as const
