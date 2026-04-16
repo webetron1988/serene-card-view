@@ -84,7 +84,7 @@ export default function Dashboard() {
         {/* Stats row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
           {stats.map(s => (
-            <StatsCard key={s.label} {...s} onClick={() => navigate("/admin/workforce/employees")} />
+            <StatsCard key={s.label} {...s} onClick={() => navigate("/app/admin/workforce/employees")} />
           ))}
         </div>
 
@@ -157,7 +157,7 @@ export default function Dashboard() {
                   License
                 </h3>
                 <button
-                  onClick={() => navigate("/admin/license")}
+                  onClick={() => navigate("/app/admin/license")}
                   className="text-xs text-primary font-medium hover:underline"
                 >
                   Manage
