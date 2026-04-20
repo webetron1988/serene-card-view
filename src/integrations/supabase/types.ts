@@ -790,6 +790,121 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_gateway_countries: {
+        Row: {
+          country_code: string
+          created_at: string
+          gateway_id: string
+          id: string
+        }
+        Insert: {
+          country_code: string
+          created_at?: string
+          gateway_id: string
+          id?: string
+        }
+        Update: {
+          country_code?: string
+          created_at?: string
+          gateway_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_gateway_countries_gateway_id_fkey"
+            columns: ["gateway_id"]
+            isOneToOne: false
+            referencedRelation: "payment_gateways"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_gateway_secrets: {
+        Row: {
+          created_at: string
+          gateway_id: string
+          id: string
+          secret_name: string
+          updated_at: string
+          vault_secret_id: string
+        }
+        Insert: {
+          created_at?: string
+          gateway_id: string
+          id?: string
+          secret_name: string
+          updated_at?: string
+          vault_secret_id: string
+        }
+        Update: {
+          created_at?: string
+          gateway_id?: string
+          id?: string
+          secret_name?: string
+          updated_at?: string
+          vault_secret_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_gateway_secrets_gateway_id_fkey"
+            columns: ["gateway_id"]
+            isOneToOne: false
+            referencedRelation: "payment_gateways"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_gateways: {
+        Row: {
+          country_scope: Database["public"]["Enums"]["gateway_country_scope"]
+          created_at: string
+          created_by: string | null
+          display_name: string
+          environment: Database["public"]["Enums"]["payment_environment"]
+          id: string
+          is_active: boolean
+          last_verified_at: string | null
+          notes: string | null
+          provider: Database["public"]["Enums"]["payment_provider"]
+          publishable_key: string | null
+          updated_at: string
+          verify_error: string | null
+          verify_status: Database["public"]["Enums"]["gateway_verify_status"]
+        }
+        Insert: {
+          country_scope?: Database["public"]["Enums"]["gateway_country_scope"]
+          created_at?: string
+          created_by?: string | null
+          display_name: string
+          environment?: Database["public"]["Enums"]["payment_environment"]
+          id?: string
+          is_active?: boolean
+          last_verified_at?: string | null
+          notes?: string | null
+          provider: Database["public"]["Enums"]["payment_provider"]
+          publishable_key?: string | null
+          updated_at?: string
+          verify_error?: string | null
+          verify_status?: Database["public"]["Enums"]["gateway_verify_status"]
+        }
+        Update: {
+          country_scope?: Database["public"]["Enums"]["gateway_country_scope"]
+          created_at?: string
+          created_by?: string | null
+          display_name?: string
+          environment?: Database["public"]["Enums"]["payment_environment"]
+          id?: string
+          is_active?: boolean
+          last_verified_at?: string | null
+          notes?: string | null
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          publishable_key?: string | null
+          updated_at?: string
+          verify_error?: string | null
+          verify_status?: Database["public"]["Enums"]["gateway_verify_status"]
+        }
+        Relationships: []
+      }
       permissions: {
         Row: {
           category: string
@@ -1282,6 +1397,16 @@ export type Database = {
         Args: { _month: string }
         Returns: undefined
       }
+      gateway_covered_countries: {
+        Args: { _gateway_id: string }
+        Returns: {
+          country_code: string
+        }[]
+      }
+      get_payment_gateway_secret: {
+        Args: { _gateway_id: string; _secret_name: string }
+        Returns: string
+      }
       get_user_tier: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["user_tier"]
@@ -1314,6 +1439,10 @@ export type Database = {
         Args: { _retain_months?: number }
         Returns: number
       }
+      set_payment_gateway_secret: {
+        Args: { _gateway_id: string; _secret_name: string; _value: string }
+        Returns: string
+      }
     }
     Enums: {
       app_role:
@@ -1323,6 +1452,10 @@ export type Database = {
         | "hr_admin"
         | "employee"
         | "auditor"
+      gateway_country_scope: "all" | "selected"
+      gateway_verify_status: "unverified" | "ok" | "failed"
+      payment_environment: "test" | "live"
+      payment_provider: "stripe" | "razorpay"
       permission_tier_scope: "platform" | "tenant" | "both"
       role_kind: "system" | "platform_custom" | "tenant_custom"
       tenant_role_origin: "platform_default" | "tenant_custom"
@@ -1464,6 +1597,10 @@ export const Constants = {
         "employee",
         "auditor",
       ],
+      gateway_country_scope: ["all", "selected"],
+      gateway_verify_status: ["unverified", "ok", "failed"],
+      payment_environment: ["test", "live"],
+      payment_provider: ["stripe", "razorpay"],
       permission_tier_scope: ["platform", "tenant", "both"],
       role_kind: ["system", "platform_custom", "tenant_custom"],
       tenant_role_origin: ["platform_default", "tenant_custom"],
