@@ -126,7 +126,7 @@ export function Sidebar() {
 
       {/* Main navigation */}
       <nav className="flex-1 px-2 py-4 space-y-5 overflow-y-auto scrollbar-hide">
-        {navGroups.map((group) => (
+        {visibleGroups.map((group) => (
           <div key={group.id}>
             {!collapsed && group.label && (
               <p className="px-3 mb-2 text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-[0.1em]">
