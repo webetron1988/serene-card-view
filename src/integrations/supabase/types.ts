@@ -59,13 +59,688 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "audit_log_tenant_id_fkey"
+            foreignKeyName: "audit_log_tenant_id_fkey1"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
+      }
+      audit_log_202603: {
+        Row: {
+          actor_email: string | null
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          metadata: Json
+          resource_id: string | null
+          resource_type: string | null
+          severity: string
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      audit_log_202604: {
+        Row: {
+          actor_email: string | null
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          metadata: Json
+          resource_id: string | null
+          resource_type: string | null
+          severity: string
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      audit_log_202605: {
+        Row: {
+          actor_email: string | null
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          metadata: Json
+          resource_id: string | null
+          resource_type: string | null
+          severity: string
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      audit_log_202606: {
+        Row: {
+          actor_email: string | null
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          metadata: Json
+          resource_id: string | null
+          resource_type: string | null
+          severity: string
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      audit_log_202607: {
+        Row: {
+          actor_email: string | null
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          metadata: Json
+          resource_id: string | null
+          resource_type: string | null
+          severity: string
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      audit_log_202608: {
+        Row: {
+          actor_email: string | null
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          metadata: Json
+          resource_id: string | null
+          resource_type: string | null
+          severity: string
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      audit_log_202609: {
+        Row: {
+          actor_email: string | null
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          metadata: Json
+          resource_id: string | null
+          resource_type: string | null
+          severity: string
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      audit_log_202610: {
+        Row: {
+          actor_email: string | null
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          metadata: Json
+          resource_id: string | null
+          resource_type: string | null
+          severity: string
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      audit_log_202611: {
+        Row: {
+          actor_email: string | null
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          metadata: Json
+          resource_id: string | null
+          resource_type: string | null
+          severity: string
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      audit_log_202612: {
+        Row: {
+          actor_email: string | null
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          metadata: Json
+          resource_id: string | null
+          resource_type: string | null
+          severity: string
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      audit_log_202701: {
+        Row: {
+          actor_email: string | null
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          metadata: Json
+          resource_id: string | null
+          resource_type: string | null
+          severity: string
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      audit_log_202702: {
+        Row: {
+          actor_email: string | null
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          metadata: Json
+          resource_id: string | null
+          resource_type: string | null
+          severity: string
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      audit_log_202703: {
+        Row: {
+          actor_email: string | null
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          metadata: Json
+          resource_id: string | null
+          resource_type: string | null
+          severity: string
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      audit_log_202704: {
+        Row: {
+          actor_email: string | null
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          metadata: Json
+          resource_id: string | null
+          resource_type: string | null
+          severity: string
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      audit_log_default: {
+        Row: {
+          actor_email: string | null
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          metadata: Json
+          resource_id: string | null
+          resource_type: string | null
+          severity: string
+          tenant_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_email?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          tenant_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
       }
       notification_templates: {
         Row: {
@@ -603,6 +1278,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      ensure_audit_log_partition: {
+        Args: { _month: string }
+        Returns: undefined
+      }
       get_user_tier: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["user_tier"]
@@ -629,6 +1308,11 @@ export type Database = {
       is_tenant_member: {
         Args: { _tenant_id: string; _user_id: string }
         Returns: boolean
+      }
+      maintain_audit_log_partitions: { Args: never; Returns: undefined }
+      prune_audit_log_partitions: {
+        Args: { _retain_months?: number }
+        Returns: number
       }
     }
     Enums: {
