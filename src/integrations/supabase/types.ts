@@ -938,6 +938,50 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_entitlements: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_hard_cap: boolean
+          key: string
+          limit_value: number
+          plan_id: string
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_hard_cap?: boolean
+          key: string
+          limit_value: number
+          plan_id: string
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_hard_cap?: boolean
+          key?: string
+          limit_value?: number
+          plan_id?: string
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_entitlements_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plans: {
         Row: {
           code: string
@@ -951,6 +995,7 @@ export type Database = {
           price_monthly: number | null
           price_yearly: number | null
           sort_order: number
+          trial_days: number
           updated_at: string
         }
         Insert: {
@@ -965,6 +1010,7 @@ export type Database = {
           price_monthly?: number | null
           price_yearly?: number | null
           sort_order?: number
+          trial_days?: number
           updated_at?: string
         }
         Update: {
@@ -979,6 +1025,7 @@ export type Database = {
           price_monthly?: number | null
           price_yearly?: number | null
           sort_order?: number
+          trial_days?: number
           updated_at?: string
         }
         Relationships: []
@@ -1224,6 +1271,226 @@ export type Database = {
           },
         ]
       }
+      scheduled_plan_changes: {
+        Row: {
+          applied_at: string | null
+          canceled_at: string | null
+          created_at: string
+          created_by: string | null
+          effective_at: string
+          id: string
+          notes: string | null
+          status: Database["public"]["Enums"]["scheduled_change_status"]
+          subscription_id: string
+          target_plan_id: string
+        }
+        Insert: {
+          applied_at?: string | null
+          canceled_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          effective_at: string
+          id?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["scheduled_change_status"]
+          subscription_id: string
+          target_plan_id: string
+        }
+        Update: {
+          applied_at?: string | null
+          canceled_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          effective_at?: string
+          id?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["scheduled_change_status"]
+          subscription_id?: string
+          target_plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_plan_changes_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_plan_changes_target_plan_id_fkey"
+            columns: ["target_plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_events: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
+          from_plan_id: string | null
+          from_status: Database["public"]["Enums"]["subscription_status"] | null
+          id: string
+          metadata: Json
+          provider: Database["public"]["Enums"]["payment_provider"] | null
+          provider_event_id: string | null
+          source: Database["public"]["Enums"]["subscription_event_source"]
+          subscription_id: string
+          tenant_id: string
+          to_plan_id: string | null
+          to_status: Database["public"]["Enums"]["subscription_status"] | null
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
+          from_plan_id?: string | null
+          from_status?:
+            | Database["public"]["Enums"]["subscription_status"]
+            | null
+          id?: string
+          metadata?: Json
+          provider?: Database["public"]["Enums"]["payment_provider"] | null
+          provider_event_id?: string | null
+          source?: Database["public"]["Enums"]["subscription_event_source"]
+          subscription_id: string
+          tenant_id: string
+          to_plan_id?: string | null
+          to_status?: Database["public"]["Enums"]["subscription_status"] | null
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
+          from_plan_id?: string | null
+          from_status?:
+            | Database["public"]["Enums"]["subscription_status"]
+            | null
+          id?: string
+          metadata?: Json
+          provider?: Database["public"]["Enums"]["payment_provider"] | null
+          provider_event_id?: string | null
+          source?: Database["public"]["Enums"]["subscription_event_source"]
+          subscription_id?: string
+          tenant_id?: string
+          to_plan_id?: string | null
+          to_status?: Database["public"]["Enums"]["subscription_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_events_from_plan_id_fkey"
+            columns: ["from_plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_events_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_events_to_plan_id_fkey"
+            columns: ["to_plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          canceled_at: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string
+          gateway_id: string | null
+          grace_days: number
+          id: string
+          past_due_since: string | null
+          plan_id: string
+          provider: Database["public"]["Enums"]["payment_provider"] | null
+          provider_customer_id: string | null
+          provider_subscription_id: string | null
+          status: Database["public"]["Enums"]["subscription_status"]
+          tenant_id: string
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          canceled_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string
+          gateway_id?: string | null
+          grace_days?: number
+          id?: string
+          past_due_since?: string | null
+          plan_id: string
+          provider?: Database["public"]["Enums"]["payment_provider"] | null
+          provider_customer_id?: string | null
+          provider_subscription_id?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          tenant_id: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          canceled_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string
+          gateway_id?: string | null
+          grace_days?: number
+          id?: string
+          past_due_since?: string | null
+          plan_id?: string
+          provider?: Database["public"]["Enums"]["payment_provider"] | null
+          provider_customer_id?: string | null
+          provider_subscription_id?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          tenant_id?: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_gateway_id_fkey"
+            columns: ["gateway_id"]
+            isOneToOne: false
+            referencedRelation: "payment_gateways"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_custom_roles: {
         Row: {
           created_at: string
@@ -1393,9 +1660,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_scheduled_plan_changes: { Args: never; Returns: number }
       ensure_audit_log_partition: {
         Args: { _month: string }
         Returns: undefined
+      }
+      expire_trials_and_past_due: {
+        Args: never
+        Returns: {
+          action: string
+          subscription_id: string
+        }[]
       }
       gateway_covered_countries: {
         Args: { _gateway_id: string }
@@ -1443,6 +1718,18 @@ export type Database = {
         Args: { _gateway_id: string; _secret_name: string; _value: string }
         Returns: string
       }
+      tenant_active_subscription: {
+        Args: { _tenant_id: string }
+        Returns: string
+      }
+      tenant_entitlement: {
+        Args: { _key: string; _tenant_id: string }
+        Returns: number
+      }
+      tenant_has_feature: {
+        Args: { _flag: string; _tenant_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role:
@@ -1458,6 +1745,14 @@ export type Database = {
       payment_provider: "stripe" | "razorpay"
       permission_tier_scope: "platform" | "tenant" | "both"
       role_kind: "system" | "platform_custom" | "tenant_custom"
+      scheduled_change_status: "pending" | "applied" | "canceled"
+      subscription_event_source: "admin" | "webhook" | "system" | "tenant"
+      subscription_status:
+        | "trial"
+        | "active"
+        | "past_due"
+        | "canceled"
+        | "expired"
       tenant_role_origin: "platform_default" | "tenant_custom"
       tenant_status: "trial" | "active" | "suspended" | "archived"
       user_status: "available" | "away" | "busy" | "dnd" | "offline"
@@ -1603,6 +1898,15 @@ export const Constants = {
       payment_provider: ["stripe", "razorpay"],
       permission_tier_scope: ["platform", "tenant", "both"],
       role_kind: ["system", "platform_custom", "tenant_custom"],
+      scheduled_change_status: ["pending", "applied", "canceled"],
+      subscription_event_source: ["admin", "webhook", "system", "tenant"],
+      subscription_status: [
+        "trial",
+        "active",
+        "past_due",
+        "canceled",
+        "expired",
+      ],
       tenant_role_origin: ["platform_default", "tenant_custom"],
       tenant_status: ["trial", "active", "suspended", "archived"],
       user_status: ["available", "away", "busy", "dnd", "offline"],
