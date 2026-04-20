@@ -361,6 +361,44 @@ export type Database = {
         }
         Relationships: []
       }
+      role_permission_denies: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          permission_key: string
+          reason: string | null
+          role_kind: Database["public"]["Enums"]["role_kind"]
+          role_ref: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          permission_key: string
+          reason?: string | null
+          role_kind: Database["public"]["Enums"]["role_kind"]
+          role_ref: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          permission_key?: string
+          reason?: string | null
+          role_kind?: Database["public"]["Enums"]["role_kind"]
+          role_ref?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permission_denies_permission_key_fkey"
+            columns: ["permission_key"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
       role_permissions: {
         Row: {
           granted_at: string
@@ -568,6 +606,10 @@ export type Database = {
       get_user_tier: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["user_tier"]
+      }
+      has_permission: {
+        Args: { _key: string; _tenant_id?: string; _user_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: {
