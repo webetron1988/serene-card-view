@@ -6,25 +6,26 @@ import {
   Shield, Key, FileText, ChevronDown, ChevronUp, Layers,
   Briefcase, Database, Package
 } from "lucide-react";
+import { usePermissions } from "@/hooks/usePermissions";
 
 const navGroups = [
   {
     id: "main",
     label: "",
     items: [
-      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/app/admin/dashboard" },
+      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/app/admin/dashboard", perm: null as string | null },
     ],
   },
   {
     id: "hr",
     label: "HR Modules",
     items: [
-      { id: "workforce", label: "Workforce", icon: Users, path: "/app/admin/workforce", children: [
-        { id: "employee-list", label: "Employee Directory", path: "/app/admin/workforce/employees" },
-        { id: "org-chart", label: "Org Chart", path: "/app/admin/org/chart" },
-        { id: "org-units", label: "Org Units", path: "/app/admin/org/units" },
-        { id: "positions", label: "Positions", path: "/app/admin/org/positions" },
-        { id: "locations", label: "Locations", path: "/app/admin/org/locations" },
+      { id: "workforce", label: "Workforce", icon: Users, path: "/app/admin/workforce", perm: "workforce.employee.view", children: [
+        { id: "employee-list", label: "Employee Directory", path: "/app/admin/workforce/employees", perm: "workforce.employee.view" },
+        { id: "org-chart", label: "Org Chart", path: "/app/admin/org/chart", perm: "workforce.org_unit.view" },
+        { id: "org-units", label: "Org Units", path: "/app/admin/org/units", perm: "workforce.org_unit.view" },
+        { id: "positions", label: "Positions", path: "/app/admin/org/positions", perm: "workforce.position.view" },
+        { id: "locations", label: "Locations", path: "/app/admin/org/locations", perm: "workforce.location.view" },
       ]},
     ],
   },
@@ -32,24 +33,24 @@ const navGroups = [
     id: "platform",
     label: "Platform",
     items: [
-      { id: "marketplace", label: "Marketplace", icon: ShoppingBag, path: "/app/admin/marketplace" },
-      { id: "master-data", label: "Master Data", icon: Database, path: "/app/admin/master-data" },
+      { id: "marketplace", label: "Marketplace", icon: ShoppingBag, path: "/app/admin/marketplace", perm: "marketplace.listing.view" },
+      { id: "master-data", label: "Master Data", icon: Database, path: "/app/admin/master-data", perm: "settings.general.view" },
     ],
   },
   {
     id: "admin",
     label: "Administration",
     items: [
-      { id: "users", label: "Users", icon: Users, path: "/app/admin/users" },
-      { id: "roles-access", label: "Roles & Access", icon: Shield, path: "/app/admin/roles", children: [
-        { id: "permission-matrix", label: "Permission Matrix", path: "/app/admin/roles/permissions" },
-        { id: "roles-list", label: "Roles", path: "/app/admin/roles/list" },
+      { id: "users", label: "Users", icon: Users, path: "/app/admin/users", perm: "users.user.view" },
+      { id: "roles-access", label: "Roles & Access", icon: Shield, path: "/app/admin/roles", perm: "roles.role.view", children: [
+        { id: "permission-matrix", label: "Permission Matrix", path: "/app/admin/roles/permissions", perm: "permissions.matrix.view" },
+        { id: "roles-list", label: "Roles", path: "/app/admin/roles/list", perm: "roles.role.view" },
       ]},
-      { id: "packages", label: "Packages", icon: Package, path: "/app/admin/packages" },
-      { id: "tenants", label: "Tenants", icon: Layers, path: "/app/admin/tenants" },
-      { id: "license", label: "License", icon: Key, path: "/app/admin/license" },
-      { id: "audit", label: "Audit Log", icon: FileText, path: "/app/admin/audit" },
-      { id: "settings", label: "Settings", icon: Settings, path: "/app/admin/settings" },
+      { id: "packages", label: "Packages", icon: Package, path: "/app/admin/packages", perm: "plans.plan.view" },
+      { id: "tenants", label: "Tenants", icon: Layers, path: "/app/admin/tenants", perm: "tenants.tenant.view" },
+      { id: "license", label: "License", icon: Key, path: "/app/admin/license", perm: "license.license.view" },
+      { id: "audit", label: "Audit Log", icon: FileText, path: "/app/admin/audit", perm: "audit.log.view" },
+      { id: "settings", label: "Settings", icon: Settings, path: "/app/admin/settings", perm: "settings.general.view" },
     ],
   },
 ];
@@ -64,6 +65,7 @@ export function Sidebar() {
   const [expandedGroups, setExpandedGroups] = useState<string[]>(["workforce", "roles-access"]);
   const navigate = useNavigate();
   const location = useLocation();
+  const { can, loading: permsLoading } = usePermissions();
 
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + "/");
 
@@ -72,6 +74,26 @@ export function Sidebar() {
       prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id]
     );
   };
+
+  // Filter items by permission. Children with own perms are also filtered.
+  const visibleGroups = navGroups
+    .map((g) => ({
+      ...g,
+      items: g.items
+        .map((item: any) => {
+          if (item.children) {
+            const visibleChildren = item.children.filter(
+              (c: any) => !c.perm || can(c.perm)
+            );
+            // Show parent if its own perm passes OR any child is visible
+            const parentVisible = (!item.perm || can(item.perm)) || visibleChildren.length > 0;
+            return parentVisible ? { ...item, children: visibleChildren } : null;
+          }
+          return !item.perm || can(item.perm) ? item : null;
+        })
+        .filter(Boolean) as any[],
+    }))
+    .filter((g) => g.items.length > 0);
 
   return (
     <aside
@@ -104,7 +126,7 @@ export function Sidebar() {
 
       {/* Main navigation */}
       <nav className="flex-1 px-2 py-4 space-y-5 overflow-y-auto scrollbar-hide">
-        {navGroups.map((group) => (
+        {visibleGroups.map((group) => (
           <div key={group.id}>
             {!collapsed && group.label && (
               <p className="px-3 mb-2 text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-[0.1em]">
