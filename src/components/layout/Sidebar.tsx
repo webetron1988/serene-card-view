@@ -151,7 +151,7 @@ export function Sidebar() {
                     <button
                       onClick={() => {
                         if (hasChildren && !collapsed) {
-                          toggleExpand(item.id);
+                          toggleExpand(item.id, item.children?.[0]?.path);
                         } else {
                           navigate(item.path);
                         }
