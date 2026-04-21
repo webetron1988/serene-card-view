@@ -47,7 +47,6 @@ const navGroups = [
         { id: "roles-list", label: "Roles", path: "/app/admin/roles/list", perm: "roles.role.view" },
       ]},
       { id: "packages", label: "Packages", icon: Package, path: "/app/admin/packages", perm: "plans.plan.view" },
-      { id: "plans", label: "Plans", icon: Layers, path: "/app/admin/plans", perm: "plans.plan.view" },
       { id: "tenants", label: "Tenants", icon: Layers, path: "/app/admin/tenants", perm: "tenants.tenant.view" },
       { id: "license", label: "License", icon: Key, path: "/app/admin/license", perm: "license.license.view" },
       { id: "audit", label: "Audit Log", icon: FileText, path: "/app/admin/audit", perm: "audit.log.view" },
