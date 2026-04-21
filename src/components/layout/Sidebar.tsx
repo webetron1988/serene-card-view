@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Users, Building2, ChevronLeft, ChevronRight,
@@ -62,17 +62,24 @@ const bottomItems = [
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(["workforce", "roles-access"]);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
   const { can, loading: permsLoading } = usePermissions();
 
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + "/");
 
-  const toggleExpand = (id: string) => {
-    setExpandedGroups(prev =>
-      prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id]
-    );
+  const toggleExpand = (id: string, firstChildPath?: string) => {
+    setExpandedGroups(prev => {
+      const isOpen = prev.includes(id);
+      if (isOpen) return prev.filter(g => g !== id);
+      // Expanding: navigate to first child if not already on a child route
+      if (firstChildPath && !isActive(firstChildPath)) {
+        // Defer navigation so state update isn't blocked
+        setTimeout(() => navigate(firstChildPath), 0);
+      }
+      return [...prev, id];
+    });
   };
 
   // Filter items by permission. Children with own perms are also filtered.
