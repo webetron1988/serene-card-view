@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import { usePackagesData, buildDefaultFeatures } from "@/hooks/usePackagesData";
 import { usePackageMutations } from "@/hooks/usePackageMutations";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CatalogManager } from "@/components/packages/CatalogManager";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis,
   Tooltip, CartesianGrid, AreaChart, Area
@@ -262,6 +263,7 @@ export default function Packages() {
               { value: "matrix", icon: Layers, label: "Feature Matrix" },
               { value: "subscriptions", icon: Building2, label: "Subscriptions" },
               { value: "preview", icon: Eye, label: "Pricing Preview" },
+              { value: "catalog", icon: Settings2, label: "Catalog" },
             ].map(tab => (
               <TabsTrigger
                 key={tab.value}
@@ -667,6 +669,11 @@ export default function Packages() {
                 </div>
               ))}
             </div>
+          </TabsContent>
+
+          {/* ═══ CATALOG MANAGER TAB ═══ */}
+          <TabsContent value="catalog">
+            <CatalogManager />
           </TabsContent>
         </Tabs>
 
