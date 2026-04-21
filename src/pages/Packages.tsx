@@ -263,6 +263,7 @@ export default function Packages() {
               { value: "matrix", icon: Layers, label: "Feature Matrix" },
               { value: "subscriptions", icon: Building2, label: "Subscriptions" },
               { value: "preview", icon: Eye, label: "Pricing Preview" },
+              { value: "catalog", icon: Settings2, label: "Catalog" },
             ].map(tab => (
               <TabsTrigger
                 key={tab.value}
