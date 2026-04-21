@@ -104,8 +104,8 @@ const drawerSections = [
 
 // ─── Component ──────────────────────────────────────────────
 export default function Packages() {
-  const [packages, setPackages] = useState<Package[]>(mockPackages);
-  const [subscriptions] = useState<TenantSubscription[]>(mockSubscriptions);
+  const { packages, subscriptions, catalog, loading, refresh } = usePackagesData();
+  const { upsertPackage, archivePackage, duplicatePackage, saving } = usePackageMutations(catalog);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editPlan, setEditPlan] = useState<Package | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -151,20 +151,25 @@ export default function Packages() {
 
   function openCreate() {
     setIsCreating(true);
+    const defaults = buildDefaultFeatures(catalog);
+    // Sensible starting limits for common keys (only if present in catalog)
+    if ("employees" in defaults) (defaults as any).employees = 50;
+    if ("adminUsers" in defaults) (defaults as any).adminUsers = 3;
+    if ("departments" in defaults) (defaults as any).departments = 5;
+    if ("locations" in defaults) (defaults as any).locations = 2;
+    if ("storage" in defaults) (defaults as any).storage = "2 GB";
+    if ("coreHR" in defaults) (defaults as any).coreHR = true;
+    if ("attendance" in defaults) (defaults as any).attendance = true;
+    if ("dataEncryption" in defaults) (defaults as any).dataEncryption = true;
+    if ("dataRetentionDays" in defaults) (defaults as any).dataRetentionDays = 30;
+    if ("supportLevel" in defaults) (defaults as any).supportLevel = "Email";
+    if ("slaGuarantee" in defaults) (defaults as any).slaGuarantee = "None";
+    if ("onboarding" in defaults) (defaults as any).onboarding = "Self-serve docs";
     setEditPlan({
-      id: `pkg-${Date.now()}`, name: "", type: "paid", price: 0, yearlyPrice: 0,
+      id: "new", name: "", type: "paid", price: 0, yearlyPrice: 0,
       interval: "monthly", description: "", subscriberCount: 0, mrr: 0,
       color: "hsl(var(--primary))", status: "active",
-      features: {
-        employees: 50, adminUsers: 3, departments: 5, locations: 2, storage: "2 GB",
-        coreHR: true, recruitment: false, performance: false, payroll: false, attendance: true,
-        learning: false, analytics: false, scheduling: false, compliance: false, benefits: false,
-        apiAccess: false, ssoSaml: false, customWebhooks: false, thirdPartyIntegrations: false,
-        customBranding: false, whiteLabel: false, customDomain: false,
-        rbac: false, auditLogs: false, ipWhitelisting: false, dataEncryption: true, mfaEnforcement: false,
-        dataRetentionDays: 30,
-        supportLevel: "Email", dedicatedCSM: false, slaGuarantee: "None", onboarding: "Self-serve docs",
-      },
+      features: defaults,
     });
     setOpenSections(["basic", "limits"]);
     setDrawerOpen(true);
@@ -177,19 +182,19 @@ export default function Packages() {
     setDrawerOpen(true);
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!editPlan || !editPlan.name.trim()) { toast.error("Package name is required"); return; }
     if (isCreating && editPlan.type === "free" && hasFreePlan) {
       toast.error("Only one Free/Trial package is allowed"); return;
     }
-    if (isCreating) {
-      setPackages(prev => [...prev, editPlan]);
-      toast.success(`Package "${editPlan.name}" created`);
-    } else {
-      setPackages(prev => prev.map(p => p.id === editPlan.id ? editPlan : p));
-      toast.success(`Package "${editPlan.name}" updated`);
+    try {
+      await upsertPackage(editPlan, isCreating);
+      toast.success(isCreating ? `Package "${editPlan.name}" created` : `Package "${editPlan.name}" updated`);
+      setDrawerOpen(false);
+      await refresh();
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to save package");
     }
-    setDrawerOpen(false);
   }
 
   function updateFeature(key: string, value: any) {
@@ -197,17 +202,24 @@ export default function Packages() {
     setEditPlan({ ...editPlan, features: { ...editPlan.features, [key]: value } });
   }
 
-  function duplicatePlan(plan: Package) {
-    setPackages(prev => [...prev, {
-      ...plan, id: `pkg-${Date.now()}`, name: `${plan.name} (Copy)`,
-      features: { ...plan.features }, isPopular: false, subscriberCount: 0, mrr: 0,
-    }]);
-    toast.success(`Package "${plan.name}" duplicated`);
+  async function duplicatePlan(plan: Package) {
+    try {
+      await duplicatePackage(plan);
+      toast.success(`Package "${plan.name}" duplicated`);
+      await refresh();
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to duplicate");
+    }
   }
 
-  function archivePlan(plan: Package) {
-    setPackages(prev => prev.map(p => p.id === plan.id ? { ...p, status: "archived" as const } : p));
-    toast.success(`Package "${plan.name}" archived`);
+  async function archivePlan(plan: Package) {
+    try {
+      await archivePackage(plan.id);
+      toast.success(`Package "${plan.name}" archived`);
+      await refresh();
+    } catch (e: any) {
+      toast.error(e.message ?? "Failed to archive");
+    }
   }
 
   const tooltipStyle = {
