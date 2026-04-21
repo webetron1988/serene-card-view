@@ -455,7 +455,7 @@ export default function Packages() {
                     </tr>
                   </thead>
                   <tbody>
-                    {featureCategories.map(cat => (
+                    {catalogByCategory.map(cat => (
                       <Fragment key={cat.name}>
                         <tr className="bg-muted/20">
                           <td colSpan={activePackages.length + 1} className="p-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{cat.name}</td>
@@ -465,7 +465,7 @@ export default function Packages() {
                             <td className="p-3 text-xs text-foreground">{feat.label}</td>
                             {activePackages.map(p => (
                               <td key={p.id} className="p-3 text-center">
-                                {renderFeatureValue(p.features, feat.key, feat.type)}
+                                {renderFeatureValue(p.features, feat.key, feat.value_type)}
                               </td>
                             ))}
                           </tr>
@@ -869,8 +869,8 @@ export default function Packages() {
             </ScrollArea>
             <div className="p-4 border-t bg-card flex gap-2">
               <Button variant="outline" className="flex-1" onClick={() => setDrawerOpen(false)}>Cancel</Button>
-              <Button className="flex-1" onClick={handleSave}>
-                {isCreating ? "Create Package" : "Save Changes"}
+              <Button className="flex-1" onClick={handleSave} disabled={saving}>
+                {saving ? "Saving…" : (isCreating ? "Create Package" : "Save Changes")}
               </Button>
             </div>
           </SheetContent>
