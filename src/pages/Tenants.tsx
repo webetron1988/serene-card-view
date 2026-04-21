@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Building2, Plus, Search, MoreHorizontal, Edit2, Trash2,
   Users, Globe, AlertTriangle, Download, X, CheckCircle2,
   Ban, Settings2, Key, BarChart3, Clock, ExternalLink, Shield,
   Package, CalendarDays, Activity, Lock
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatsCard } from "@/components/shared/StatsCard";
