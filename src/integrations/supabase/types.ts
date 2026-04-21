@@ -742,6 +742,48 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_catalog: {
+        Row: {
+          category: string
+          category_sort: number
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          key: string
+          label: string
+          sort_order: number
+          updated_at: string
+          value_type: Database["public"]["Enums"]["feature_value_type"]
+        }
+        Insert: {
+          category: string
+          category_sort?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          key: string
+          label: string
+          sort_order?: number
+          updated_at?: string
+          value_type: Database["public"]["Enums"]["feature_value_type"]
+        }
+        Update: {
+          category?: string
+          category_sort?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          key?: string
+          label?: string
+          sort_order?: number
+          updated_at?: string
+          value_type?: Database["public"]["Enums"]["feature_value_type"]
+        }
+        Relationships: []
+      }
       notification_templates: {
         Row: {
           body_html: string
@@ -984,14 +1026,19 @@ export type Database = {
       }
       plans: {
         Row: {
+          badge: string | null
           code: string
+          color: string
           created_at: string
           currency: string
           description: string | null
           feature_flags: Json
           id: string
           is_active: boolean
+          is_popular: boolean
+          is_trial: boolean
           name: string
+          plan_kind: string
           price_monthly: number | null
           price_yearly: number | null
           sort_order: number
@@ -999,14 +1046,19 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          badge?: string | null
           code: string
+          color?: string
           created_at?: string
           currency?: string
           description?: string | null
           feature_flags?: Json
           id?: string
           is_active?: boolean
+          is_popular?: boolean
+          is_trial?: boolean
           name: string
+          plan_kind?: string
           price_monthly?: number | null
           price_yearly?: number | null
           sort_order?: number
@@ -1014,14 +1066,19 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          badge?: string | null
           code?: string
+          color?: string
           created_at?: string
           currency?: string
           description?: string | null
           feature_flags?: Json
           id?: string
           is_active?: boolean
+          is_popular?: boolean
+          is_trial?: boolean
           name?: string
+          plan_kind?: string
           price_monthly?: number | null
           price_yearly?: number | null
           sort_order?: number
@@ -1411,6 +1468,7 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          billing_cycle: string
           cancel_at_period_end: boolean
           canceled_at: string | null
           created_at: string
@@ -1419,17 +1477,21 @@ export type Database = {
           gateway_id: string | null
           grace_days: number
           id: string
+          mrr_override: number | null
           past_due_since: string | null
           plan_id: string
           provider: Database["public"]["Enums"]["payment_provider"] | null
           provider_customer_id: string | null
           provider_subscription_id: string | null
+          seats: number
           status: Database["public"]["Enums"]["subscription_status"]
           tenant_id: string
           trial_ends_at: string | null
           updated_at: string
+          used_seats: number
         }
         Insert: {
+          billing_cycle?: string
           cancel_at_period_end?: boolean
           canceled_at?: string | null
           created_at?: string
@@ -1438,17 +1500,21 @@ export type Database = {
           gateway_id?: string | null
           grace_days?: number
           id?: string
+          mrr_override?: number | null
           past_due_since?: string | null
           plan_id: string
           provider?: Database["public"]["Enums"]["payment_provider"] | null
           provider_customer_id?: string | null
           provider_subscription_id?: string | null
+          seats?: number
           status?: Database["public"]["Enums"]["subscription_status"]
           tenant_id: string
           trial_ends_at?: string | null
           updated_at?: string
+          used_seats?: number
         }
         Update: {
+          billing_cycle?: string
           cancel_at_period_end?: boolean
           canceled_at?: string | null
           created_at?: string
@@ -1457,15 +1523,18 @@ export type Database = {
           gateway_id?: string | null
           grace_days?: number
           id?: string
+          mrr_override?: number | null
           past_due_since?: string | null
           plan_id?: string
           provider?: Database["public"]["Enums"]["payment_provider"] | null
           provider_customer_id?: string | null
           provider_subscription_id?: string | null
+          seats?: number
           status?: Database["public"]["Enums"]["subscription_status"]
           tenant_id?: string
           trial_ends_at?: string | null
           updated_at?: string
+          used_seats?: number
         }
         Relationships: [
           {
@@ -1739,6 +1808,7 @@ export type Database = {
         | "hr_admin"
         | "employee"
         | "auditor"
+      feature_value_type: "boolean" | "limit" | "retention" | "text"
       gateway_country_scope: "all" | "selected"
       gateway_verify_status: "unverified" | "ok" | "failed"
       payment_environment: "test" | "live"
@@ -1892,6 +1962,7 @@ export const Constants = {
         "employee",
         "auditor",
       ],
+      feature_value_type: ["boolean", "limit", "retention", "text"],
       gateway_country_scope: ["all", "selected"],
       gateway_verify_status: ["unverified", "ok", "failed"],
       payment_environment: ["test", "live"],
