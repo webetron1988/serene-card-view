@@ -26,6 +26,7 @@ import AuditLog from "@/pages/AuditLog";
 import Packages from "@/pages/Packages";
 import PermissionMatrix from "@/pages/roles/PermissionMatrix";
 import RolesAccess from "@/pages/roles/RolesAccess";
+import Plans from "@/pages/admin/Plans";
 
 // Settings
 import { AppShell } from "@/components/layout/AppShell";
@@ -98,6 +99,7 @@ export default function App() {
             <Route path="/app/admin/license" element={Admin(<License />)} />
             <Route path="/app/admin/audit" element={Admin(<AuditLog />)} />
             <Route path="/app/admin/packages" element={Admin(<Packages />)} />
+            <Route path="/app/admin/plans" element={Admin(<Plans />)} />
             <Route path="/app/admin/settings" element={Admin(<SettingsPage />)}>
               <Route index element={<GeneralSettings />} />
               <Route path="registration" element={<RegistrationSettings />} />
