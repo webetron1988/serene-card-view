@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Users, Building2, ChevronLeft, ChevronRight,
@@ -62,17 +62,43 @@ const bottomItems = [
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(["workforce", "roles-access"]);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
   const { can, loading: permsLoading } = usePermissions();
 
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + "/");
 
-  const toggleExpand = (id: string) => {
-    setExpandedGroups(prev =>
-      prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id]
-    );
+  // Auto-expand any parent whose child route is currently active (preserves state on refresh/direct nav)
+  useEffect(() => {
+    const parentsToOpen: string[] = [];
+    navGroups.forEach((g) => {
+      g.items.forEach((item: any) => {
+        if (item.children?.some((c: any) => isActive(c.path))) {
+          parentsToOpen.push(item.id);
+        }
+      });
+    });
+    if (parentsToOpen.length) {
+      setExpandedGroups((prev) => {
+        const merged = Array.from(new Set([...prev, ...parentsToOpen]));
+        return merged.length === prev.length ? prev : merged;
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+
+  const toggleExpand = (id: string, firstChildPath?: string) => {
+    setExpandedGroups(prev => {
+      const isOpen = prev.includes(id);
+      if (isOpen) return prev.filter(g => g !== id);
+      // Expanding: navigate to first child if not already on a child route
+      if (firstChildPath && !isActive(firstChildPath)) {
+        // Defer navigation so state update isn't blocked
+        setTimeout(() => navigate(firstChildPath), 0);
+      }
+      return [...prev, id];
+    });
   };
 
   // Filter items by permission. Children with own perms are also filtered.
@@ -144,7 +170,7 @@ export function Sidebar() {
                     <button
                       onClick={() => {
                         if (hasChildren && !collapsed) {
-                          toggleExpand(item.id);
+                          toggleExpand(item.id, item.children?.[0]?.path);
                         } else {
                           navigate(item.path);
                         }
