@@ -231,6 +231,16 @@ export default function Packages() {
 
   const activePackages = packages.filter(p => p.status === "active");
 
+  // Group catalog into categories (preserves DB sort_order)
+  const catalogByCategory = useMemo(() => {
+    const map = new Map<string, typeof catalog>();
+    for (const f of catalog) {
+      if (!map.has(f.category)) map.set(f.category, []);
+      map.get(f.category)!.push(f);
+    }
+    return Array.from(map.entries()).map(([name, features]) => ({ name, features }));
+  }, [catalog]);
+
   return (
     <AppShell>
       <div className="space-y-6 page-enter">
