@@ -1,7 +1,8 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Lock, Sparkles } from "lucide-react";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EntitlementGateProps {
   tenantId: string | null | undefined;
@@ -31,6 +32,24 @@ export function EntitlementGate({
   upgradeHref = "/app/admin/packages",
 }: EntitlementGateProps) {
   const { hasFeature, limit, isUnlimited, loading } = useEntitlements(tenantId);
+  const [labels, setLabels] = useState<Record<string, string>>({});
+
+  // Fetch catalog labels once for nicer fallback copy.
+  useEffect(() => {
+    const keys = [feature, limitKey].filter(Boolean) as string[];
+    if (keys.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("feature_catalog")
+        .select("key,label")
+        .in("key", keys);
+      if (!cancelled && data) {
+        setLabels(Object.fromEntries(data.map((r: any) => [r.key, r.label])));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [feature, limitKey]);
 
   if (loading) return null;
 
@@ -47,6 +66,9 @@ export function EntitlementGate({
   if (silent) return null;
   if (fallback !== undefined) return <>{fallback}</>;
 
+  const featureLabel = feature ? (labels[feature] ?? feature.replace(/([A-Z])/g, " $1").trim()) : "";
+  const limitLabel = limitKey ? (labels[limitKey] ?? limitKey.replace(/([A-Z])/g, " $1").trim()) : "";
+
   return (
     <div className="rounded-xl border border-dashed border-border bg-muted/30 p-6 text-center space-y-3">
       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
@@ -58,8 +80,8 @@ export function EntitlementGate({
         </p>
         <p className="text-xs text-muted-foreground">
           {feature
-            ? `Upgrade to unlock ${feature.replace(/_/g, " ")}.`
-            : `Your plan allows ${limit(limitKey!) ?? 0} ${limitKey?.replace(/^max_/, "")}.`}
+            ? `Upgrade to unlock ${featureLabel}.`
+            : `Your plan allows ${limit(limitKey!) ?? 0} ${limitLabel}.`}
         </p>
       </div>
       <Button size="sm" variant="outline" asChild>
