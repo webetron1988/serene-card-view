@@ -29,4 +29,5 @@ Updated: just now
 - [Radix Select Empty Values](mem://tech/patterns/radix-select-empty-values) — Using __none__ placeholder for Radix Select
 - [Settings Module](mem://features/settings) — Nested routing and comprehensive RBAC/Security settings
 - [Packages Management](mem://features/packages-management) — Canvas Pro Hub style subscription management and tenant health
+- [Plans Management](mem://features/plans-management) — /app/admin/plans CRUD + feature_flags JSON + entitlements; useEntitlements hook + EntitlementGate component
 - [Multi-Tenancy](mem://features/multi-tenancy) — Scope of Super Admin vs future Client/Tenant routes
