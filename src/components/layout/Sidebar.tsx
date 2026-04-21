@@ -69,6 +69,25 @@ export function Sidebar() {
 
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + "/");
 
+  // Auto-expand any parent whose child route is currently active (preserves state on refresh/direct nav)
+  useEffect(() => {
+    const parentsToOpen: string[] = [];
+    navGroups.forEach((g) => {
+      g.items.forEach((item: any) => {
+        if (item.children?.some((c: any) => isActive(c.path))) {
+          parentsToOpen.push(item.id);
+        }
+      });
+    });
+    if (parentsToOpen.length) {
+      setExpandedGroups((prev) => {
+        const merged = Array.from(new Set([...prev, ...parentsToOpen]));
+        return merged.length === prev.length ? prev : merged;
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+
   const toggleExpand = (id: string, firstChildPath?: string) => {
     setExpandedGroups(prev => {
       const isOpen = prev.includes(id);
