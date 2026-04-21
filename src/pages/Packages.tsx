@@ -31,6 +31,9 @@ import {
 } from "@/data/packagesData";
 import { SubscriptionDetailPanel } from "@/components/packages/SubscriptionDetailPanel";
 import { toast } from "sonner";
+import { usePackagesData, buildDefaultFeatures } from "@/hooks/usePackagesData";
+import { usePackageMutations } from "@/hooks/usePackageMutations";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis,
   Tooltip, CartesianGrid, AreaChart, Area
