@@ -670,6 +670,11 @@ export default function Packages() {
               ))}
             </div>
           </TabsContent>
+
+          {/* ═══ CATALOG MANAGER TAB ═══ */}
+          <TabsContent value="catalog">
+            <CatalogManager />
+          </TabsContent>
         </Tabs>
 
         {/* ═══ EDIT/CREATE DRAWER ═══ */}
